@@ -24,16 +24,11 @@ Vsta-sup
 Leagues: ['VCS']
 Splits: ['Spring' 'Summer']
 
-Kratos-top
 Nanaue-top
-Fireblade-top
 Gury-jng
-Tomrio-jng
 Kati-mid
 Shogun-bot
 Bie-sup
-Kairi-sup
-SofM-sup
 
 
 [GAM Esports]
@@ -42,10 +37,7 @@ Splits: ['Spring' nan 'Summer']
 
 Kiaya-top
 Levi-jng
-Blazes-mid
 Emo-mid
-Pyshiro-bot
-Neo-bot
 EasyLove-bot
 Elio-sup
 
@@ -57,7 +49,6 @@ Splits: ['Spring' 'Summer']
 Sniper-top
 River-jng
 Quid-mid
-Meech-bot
 Tomo-bot
 Eyla-sup
 
@@ -88,17 +79,10 @@ Kuri-sup
 Leagues: ['LLA']
 Splits: ['Opening' 'Closing']
 
-Keine-top
 Summit-top
 Oddie-jng
-Summit-jng
-Daiky-jng
-Lava-mid
 Keine-mid
-Ceo-mid
 Ceo-bot
-Lyonz-bot
-Oddie-sup
 Lyonz-sup
 
 
