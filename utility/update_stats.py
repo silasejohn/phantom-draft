@@ -48,7 +48,7 @@ def custom_role_sort_key(item):
     return priority_list.index(pos) if pos in priority_list else len(priority_list)
 
 # create an team_info.txt file in data/team_data with the teamname and players on the team
-with open('data/team_data/team_info.txt', 'w') as f:
+with open('info/teams.txt', 'w') as f:
     for team in important_teams:
 
         # find unique players and positions for a team
@@ -61,8 +61,10 @@ with open('data/team_data/team_info.txt', 'w') as f:
         sorted_unique_players_and_positions = sorted(unique_players_and_positions, key=custom_role_sort_key)
 
         # write to file
-        f.write(f"[{team}]")
+        f.write(f"[{team}]\n")
+        f.write(f"Leagues: {team_leagues[team]}\n")
+        f.write(f"Splits: {team_splits[team]}\n")
         for player_pos in sorted_unique_players_and_positions:
             f.write(f"\n{player_pos}")
-        f.write(f"\n\n")
+        f.write(f"\n\n\n")
 

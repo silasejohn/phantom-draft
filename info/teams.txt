@@ -1,0 +1,104 @@
+[PSG Talon]
+Leagues: ['PCS' 'MSI']
+Splits: ['Spring' nan 'Summer']
+
+Azhi-top
+JunJia-jng
+Maple-mid
+Betty-bot
+Woody-sup
+
+
+[Fukuoka SoftBank HAWKS gaming]
+Leagues: ['LJL' 'PCS']
+Splits: ['Spring' 'Summer']
+
+Evi-top
+Forest-jng
+DasheR-mid
+Marble-bot
+Vsta-sup
+
+
+[Vikings Esports]
+Leagues: ['VCS']
+Splits: ['Spring' 'Summer']
+
+Kratos-top
+Nanaue-top
+Fireblade-top
+Gury-jng
+Tomrio-jng
+Kati-mid
+Shogun-bot
+Bie-sup
+Kairi-sup
+SofM-sup
+
+
+[GAM Esports]
+Leagues: ['VCS' 'MSI']
+Splits: ['Spring' nan 'Summer']
+
+Kiaya-top
+Levi-jng
+Blazes-mid
+Emo-mid
+Pyshiro-bot
+Neo-bot
+EasyLove-bot
+Elio-sup
+
+
+[100 Thieves]
+Leagues: ['LCS']
+Splits: ['Spring' 'Summer']
+
+Sniper-top
+River-jng
+Quid-mid
+Meech-bot
+Tomo-bot
+Eyla-sup
+
+
+[MAD Lions KOI]
+Leagues: ['LEC']
+Splits: ['Winter' 'Spring' 'Summer' 'Finals']
+
+Myrwn-top
+Elyoya-jng
+Fresskowy-mid
+Supa-bot
+Alvaro-sup
+
+
+[paiN Gaming]
+Leagues: ['CBLOL']
+Splits: ['Split 1' 'Split 2']
+
+Wizer-top
+CarioK-jng
+dyNquedo-mid
+TitaN-bot
+Kuri-sup
+
+
+[Movistar R7]
+Leagues: ['LLA']
+Splits: ['Opening' 'Closing']
+
+Keine-top
+Summit-top
+Oddie-jng
+Summit-jng
+Daiky-jng
+Lava-mid
+Keine-mid
+Ceo-mid
+Ceo-bot
+Lyonz-bot
+Oddie-sup
+Lyonz-sup
+
+
