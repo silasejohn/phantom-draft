@@ -1,0 +1,2 @@
+When installing this repo, you need to add the most updated copy of the esports_data spreadsheet to this repo
+Other csvs should be AUTO generated upon running league_stats.py

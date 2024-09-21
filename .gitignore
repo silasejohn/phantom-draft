@@ -1,0 +1,6 @@
+.DS_Store
+.env
+league-env/*
+data/2024*
+data/league_data/*
+utility/__pycache__/*
