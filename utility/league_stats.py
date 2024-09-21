@@ -58,11 +58,28 @@ def create_single_team_df(multi_league_df, team_name):
 
 def create_single_split_team_df(multi_league_df, team_name, split_name):
     """
-    Create a dataframe for a single team from the multi-league dataframe
+    Create a dataframe for a single team per split per playoffsfrom the multi-league dataframe
     """
+    # find all unique gameid values for a team in a split and add to a list
     df = multi_league_df[(multi_league_df['teamname'] == team_name) & (multi_league_df['split'] == split_name)]
-    return df
+    
+    # find all unique gameid values in df
+    gameids = df['gameid'].unique()
 
+    # for all gameids in the list, find all rows in the multi_league_df that have that gameid and create new df
+    split_df = pd.DataFrame()
+    for gameid in gameids:
+        game_df = multi_league_df[multi_league_df['gameid'] == gameid]
+        split_df = pd.concat([split_df, game_df])
+    
+    # if row in split_df is not a playoff game, add to new df
+    non_playoff_split_df = split_df[split_df['playoffs'] == 0]
+
+    # if row in split_df is a playoff game, add to new df
+    playoff_split_df = split_df[split_df['playoffs'] == 1]
+
+    return non_playoff_split_df, playoff_split_df
+    
 def export_df_to_csv(df, filename):
     """
     Export a dataframe to a csv file
