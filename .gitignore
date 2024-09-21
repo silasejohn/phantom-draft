@@ -3,4 +3,5 @@
 league-env/*
 data/2024*
 data/league_data/*
+data/team_data/*
 utility/__pycache__/*

@@ -1,6 +1,5 @@
 from dotenv import load_dotenv
 import pandas as pd
-import csv
 import os
 
 def create_multi_league_df():
@@ -43,19 +42,25 @@ def unique_teams(multi_league_df, league_name):
     teams = df['teamname'].unique()
     return teams
 
-def find_leagues_given_team(multi_league_df, team_name):
-    """
-    Identify leagues in which a team has participated
-    """
-    df = multi_league_df[multi_league_df['teamname'] == team_name]
-    leagues = df['league'].unique()
-    return leagues
-
 def create_single_league_df(multi_league_df, league_name):
     """
     Create a dataframe for a single league from the multi-league dataframe
     """
     df = multi_league_df[multi_league_df['league'] == league_name]
+    return df
+
+def create_single_team_df(multi_league_df, team_name):
+    """
+    Create a dataframe for a single team from the multi-league dataframe
+    """
+    df = multi_league_df[multi_league_df['teamname'] == team_name]
+    return df
+
+def create_single_split_team_df(multi_league_df, team_name, split_name):
+    """
+    Create a dataframe for a single team from the multi-league dataframe
+    """
+    df = multi_league_df[(multi_league_df['teamname'] == team_name) & (multi_league_df['split'] == split_name)]
     return df
 
 def export_df_to_csv(df, filename):
