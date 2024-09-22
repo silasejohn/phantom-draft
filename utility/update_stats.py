@@ -81,6 +81,10 @@ for filename in os.listdir('data/team_data'): # relative path
         df = pd.read_csv(f'data/team_data/{filename}')
         unique_gameids = df['gameid'].nunique() # find unique gameids
 
+        # store all unique gameids in a list
+        unique_gameids = df['gameid'].unique()
+        # print(unique_gameids)
+
         # find unique gameids for when game is '1'
         unique_series = df[df['game'] == 1]['gameid'].nunique()
 
@@ -101,6 +105,7 @@ for filename in os.listdir('data/team_data'): # relative path
             output.append(output_msg)
             # print(f"[{team}] [{split}] {unique_gameids} unique gameids")
 
+
 # sort the output list alphabetically
 output.sort()
 
@@ -109,6 +114,198 @@ with open('info/playins_history.txt', 'w') as f:
     for item in output:
         f.write(f"{item}\n")
     f.write("\n")
+
+# calculate points / make new spreadsheet per team in play-ins
+for filename in os.listdir('data/team_data'): # relative path
+    if filename.endswith('.csv'):
+
+        # create new csv file in /data/playins_team_data/{filename}
+        new_filename = filename.split('.')[0] + "_pts.csv"
+        with open(f'data/playins_team_data/{new_filename}', 'w') as f:
+            # write the header
+            f.write("gameid, league, split, playoffs, series_num, game_num, ego_team, opp_team, gamelength, top_player, top_champion, top_primary_kills, top_primary_deaths, top_primary_assists, top_primary_total_cs, jgl_player, jgl_champion, jgl_primary_kills, jgl_primary_deaths, jgl_primary_assists, jgl_primary_total_cs, mid_player, mid_champion, mid_primary_kills, mid_primary_deaths, mid_primary_assists, mid_primary_total_cs, bot_player, bot_champion, bot_primary_kills, bot_primary_deaths, bot_primary_assists, bot_primary_total_cs, sup_player, sup_champion, sup_primary_kills, sup_primary_deaths, sup_primary_assists, sup_primary_total_cs, constant_turrets, constant_dragons, constant_heralds, constant_barons, constant_win, constant_win_under_30, constant_first_blood\n")
+
+            df = pd.read_csv(f'data/team_data/{filename}')
+            team_name = filename.split('_')[0]
+
+            total_games = df['gameid'].nunique()
+
+            # find unique gameids 
+            unique_gameids = df['gameid'].unique()
+
+            series_num = "Z" # initialize series_num to "Z"
+
+            # extract match info
+            for gameid in unique_gameids:
+                # gameid, league, split, playoffs, series_num, game, ego_team, opp_team, gamelength,
+                # top_player, top_champion, top_primary_kills, top_primary_deaths, top_primary_assists, top_primary_total_cs,
+                # jgl_player, jgl_champion, jgl_primary_kills, jgl_primary_deaths, jgl_primary_assists, jgl_primary_total_cs, 
+                # mid_player, mid_champion, mid_primary_kills, mid_primary_deaths, mid_primary_assists, mid_primary_total_cs, 
+                # bot_player, bot_champion, bot_primary_kills, bot_primary_deaths, bot_primary_assists, bot_primary_total_cs, 
+                # sup_player, sup_champion, sup_primary_kills, sup_primary_deaths, sup_primary_assists, sup_primary_total_cs, 
+                # contant_towers, constant_dragons, constant_heralds, constant_barons, constant_result, constant_win_under_30, constant_firstblood
+                # include opp player / champ / rank later
+                relevant_match_info = {} 
+
+                # game_id, league, split, playoffs, series_num, game_num, ego_team, opp_team
+                # top_player, top_primary_kill_pts, top_primary_death_pts, top_primary_assist_pts, top_primary_cs_pts,
+                # jgl_player, jgl_primary_kill_pts, jgl_primary_death_pts, jgl_primary_assist_pts, jgl_primary_cs_pts, 
+                # mid_player, mid_primary_kill_pts, mid_primary_death_pts, mid_primary_assist_pts, mid_primary_cs_pts, 
+                # bot_player, bot_primary_kill_pts, bot_primary_death_pts, bot_primary_assist_pts, bot_primary_cs_pts, 
+                # sup_player, sup_primary_kill_pts, sup_primary_death_pts, sup_primary_assist_pts, sup_primary_cs_pts, 
+                # contant_turrets, constant_dragons, constant_hearlds, constant_barons, constant_win, constant_win_under_30, constant_first_blood
+                match_pts_info = {}
+
+                game_df = df[df['gameid'] == gameid] # all rows with the same gameid
+
+                # if game is "1", increment series_num by 1 Letter 
+                # if series_num is "Z", increment series_num to "A"
+                if game_df['game'].values[0] == 1:
+                    if series_num == "Z":
+                        series_num = "A"
+                    else:
+                        series_num = chr(ord(series_num) + 1)
+                
+                relevant_match_info["gameid"] = gameid
+                relevant_match_info["league"] = game_df['league'].values[0]
+                relevant_match_info["split"] = game_df['split'].values[0]
+                relevant_match_info["playoffs"] = game_df['playoffs'].values[0]
+                relevant_match_info["series_num"] = series_num
+                relevant_match_info["game_num"] = game_df['game'].values[0]
+                
+                # pull the "teamname" from row with participantid of 100
+                team1 = game_df[game_df['participantid'] == 100]['teamname'].values[0]
+                team2 = game_df[game_df['participantid'] == 200]['teamname'].values[0]
+
+                # if team1 is the team_name, ego_team is team1, opp_team is team2
+                top_id, jng_id, mid_id, bot_id, sup_id, team_id = 0, 0, 0, 0, 0, 0
+                if team1 == team_name:
+                    relevant_match_info["ego_team"] = team1
+                    relevant_match_info["opp_team"] = team2
+                    top_id, jng_id, mid_id, bot_id, sup_id = 1, 2, 3, 4, 5
+                    team_id = 100
+                else:
+                    relevant_match_info["ego_team"] = team2
+                    relevant_match_info["opp_team"] = team1
+                    top_id, jng_id, mid_id, bot_id, sup_id = 6, 7, 8, 9, 10
+                    team_id = 200
+                
+                # find the player and champion for each role
+                top_player = game_df[game_df['participantid'] == top_id]['playername'].values[0]
+                jng_player = game_df[game_df['participantid'] == jng_id]['playername'].values[0]
+                mid_player = game_df[game_df['participantid'] == mid_id]['playername'].values[0]
+                bot_player = game_df[game_df['participantid'] == bot_id]['playername'].values[0]
+                sup_player = game_df[game_df['participantid'] == sup_id]['playername'].values[0]
+
+                top_champion = game_df[game_df['participantid'] == top_id]['champion'].values[0]
+                jng_champion = game_df[game_df['participantid'] == jng_id]['champion'].values[0]
+                mid_champion = game_df[game_df['participantid'] == mid_id]['champion'].values[0]
+                bot_champion = game_df[game_df['participantid'] == bot_id]['champion'].values[0]
+                sup_champion = game_df[game_df['participantid'] == sup_id]['champion'].values[0]
+
+                # find the primary stats for each role
+                top_kills = game_df[game_df['participantid'] == top_id]['kills'].values[0]
+                # print(top_kills)
+                top_deaths = game_df[game_df['participantid'] == top_id]['deaths'].values[0]
+                # print(top_deaths)
+                top_assists = game_df[game_df['participantid'] == top_id]['assists'].values[0]
+                # print(top_assists)
+                top_total_cs = game_df[game_df['participantid'] == top_id]['total cs'].values[0]
+                
+
+                jng_kills = game_df[game_df['participantid'] == jng_id]['kills'].values[0]
+                jng_deaths = game_df[game_df['participantid'] == jng_id]['deaths'].values[0]
+                jng_assists = game_df[game_df['participantid'] == jng_id]['assists'].values[0]
+                jng_total_cs = game_df[game_df['participantid'] == jng_id]['total cs'].values[0]
+
+                mid_kills = game_df[game_df['participantid'] == mid_id]['kills'].values[0]
+                mid_deaths = game_df[game_df['participantid'] == mid_id]['deaths'].values[0]
+                mid_assists = game_df[game_df['participantid'] == mid_id]['assists'].values[0]
+                mid_total_cs = game_df[game_df['participantid'] == mid_id]['total cs'].values[0]
+
+                bot_kills = game_df[game_df['participantid'] == bot_id]['kills'].values[0]
+                bot_deaths = game_df[game_df['participantid'] == bot_id]['deaths'].values[0]
+                bot_assists = game_df[game_df['participantid'] == bot_id]['assists'].values[0]
+                bot_total_cs = game_df[game_df['participantid'] == bot_id]['total cs'].values[0]
+
+                sup_kills = game_df[game_df['participantid'] == sup_id]['kills'].values[0]
+                sup_deaths = game_df[game_df['participantid'] == sup_id]['deaths'].values[0]
+                sup_assists = game_df[game_df['participantid'] == sup_id]['assists'].values[0]
+                sup_total_cs = game_df[game_df['participantid'] == sup_id]['total cs'].values[0]
+
+                # find the constant stats for the game for team
+                constant_turrets = game_df[game_df['participantid'] == team_id]['towers'].values[0]
+                constant_dragons = game_df[game_df['participantid'] == team_id]['dragons'].values[0]
+                constant_heralds = game_df[game_df['participantid'] == team_id]['heralds'].values[0]
+                constant_barons = game_df[game_df['participantid'] == team_id]['barons'].values[0]
+                constant_win = game_df[game_df['participantid'] == team_id]['result'].values[0]
+                game_length = game_df['gamelength'].values[0] 
+                if game_length < 3000 and constant_win == 1:
+                    constant_win_under_30 = 1
+                else:
+                    constant_win_under_30 = 0
+                constant_first_blood = game_df[game_df['participantid'] == team_id]['firstblood'].values[0]
+                
+                # store all relevant match info
+                relevant_match_info["game_length"] = game_length
+
+                relevant_match_info["top_player"] = top_player
+                relevant_match_info["jgl_player"] = jng_player
+                relevant_match_info["mid_player"] = mid_player
+                relevant_match_info["bot_player"] = bot_player
+                relevant_match_info["sup_player"] = sup_player
+
+                relevant_match_info["top_champion"] = top_champion
+                relevant_match_info["jgl_champion"] = jng_champion
+                relevant_match_info["mid_champion"] = mid_champion
+                relevant_match_info["bot_champion"] = bot_champion
+                relevant_match_info["sup_champion"] = sup_champion
+
+                relevant_match_info["top_primary_kills"] = top_kills
+                relevant_match_info["top_primary_deaths"] = top_deaths
+                relevant_match_info["top_primary_assists"] = top_assists
+                relevant_match_info["top_primary_total_cs"] = top_total_cs
+
+                relevant_match_info["jgl_primary_kills"] = jng_kills
+                relevant_match_info["jgl_primary_deaths"] = jng_deaths
+                relevant_match_info["jgl_primary_assists"] = jng_assists
+                relevant_match_info["jgl_primary_total_cs"] = jng_total_cs
+
+                relevant_match_info["mid_primary_kills"] = mid_kills
+                relevant_match_info["mid_primary_deaths"] = mid_deaths
+                relevant_match_info["mid_primary_assists"] = mid_assists
+                relevant_match_info["mid_primary_total_cs"] = mid_total_cs
+
+                relevant_match_info["bot_primary_kills"] = bot_kills
+                relevant_match_info["bot_primary_deaths"] = bot_deaths
+                relevant_match_info["bot_primary_assists"] = bot_assists
+                relevant_match_info["bot_primary_total_cs"] = bot_total_cs
+
+                relevant_match_info["sup_primary_kills"] = sup_kills
+                relevant_match_info["sup_primary_deaths"] = sup_deaths
+                relevant_match_info["sup_primary_assists"] = sup_assists
+                relevant_match_info["sup_primary_total_cs"] = sup_total_cs
+                
+                relevant_match_info["constant_turrets"] = constant_turrets
+                relevant_match_info["constant_dragons"] = constant_dragons
+                relevant_match_info["constant_heralds"] = constant_heralds
+                relevant_match_info["constant_barons"] = constant_barons
+                relevant_match_info["constant_win"] = constant_win
+                relevant_match_info["constant_win_under_30"] = constant_win_under_30
+                relevant_match_info["constant_first_blood"] = constant_first_blood
+
+                # write relevant match info to csv
+                f.write(f"{relevant_match_info['gameid']}, {relevant_match_info['league']}, {relevant_match_info['split']}, {relevant_match_info['playoffs']}, {relevant_match_info['series_num']}, {relevant_match_info['game_num']}, {relevant_match_info['ego_team']}, {relevant_match_info['opp_team']}, {relevant_match_info['game_length']}, {relevant_match_info['top_player']}, {relevant_match_info['top_champion']}, {relevant_match_info['top_primary_kills']}, {relevant_match_info['top_primary_deaths']}, {relevant_match_info['top_primary_assists']}, {relevant_match_info['top_primary_total_cs']}, {relevant_match_info['jgl_player']}, {relevant_match_info['jgl_champion']}, {relevant_match_info['jgl_primary_kills']}, {relevant_match_info['jgl_primary_deaths']}, {relevant_match_info['jgl_primary_assists']}, {relevant_match_info['jgl_primary_total_cs']}, {relevant_match_info['mid_player']}, {relevant_match_info['mid_champion']}, {relevant_match_info['mid_primary_kills']}, {relevant_match_info['mid_primary_deaths']}, {relevant_match_info['mid_primary_assists']}, {relevant_match_info['mid_primary_total_cs']}, {relevant_match_info['bot_player']}, {relevant_match_info['bot_champion']}, {relevant_match_info['bot_primary_kills']}, {relevant_match_info['bot_primary_deaths']}, {relevant_match_info['bot_primary_assists']}, {relevant_match_info['bot_primary_total_cs']}, {relevant_match_info['sup_player']}, {relevant_match_info['sup_champion']}, {relevant_match_info['sup_primary_kills']}, {relevant_match_info['sup_primary_deaths']}, {relevant_match_info['sup_primary_assists']}, {relevant_match_info['sup_primary_total_cs']}, {relevant_match_info['constant_turrets']}, {relevant_match_info['constant_dragons']}, {relevant_match_info['constant_heralds']}, {relevant_match_info['constant_barons']}, {relevant_match_info['constant_win']}, {relevant_match_info['constant_win_under_30']}, {relevant_match_info['constant_first_blood']}\n")
+
+print("Done!")  
+            
+
+
+       
+
+        
+     
+
         
         
 
