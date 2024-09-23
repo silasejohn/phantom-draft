@@ -1,7 +1,9 @@
 from league_stats import create_multi_league_df, create_single_league_df, export_df_to_csv, create_single_split_team_df
 from team_stats import find_leagues_given_team, find_splits_given_team, find_unique_players_and_positions_given_team
 import pandas as pd
+import json
 import os
+import sys
 
 # Create a multi-league dataframe
 multi_league_df = create_multi_league_df()
@@ -120,10 +122,10 @@ for filename in os.listdir('data/team_data'): # relative path
     if filename.endswith('.csv'):
 
         # create new csv file in /data/playins_team_data/{filename}
-        new_filename = filename.split('.')[0] + "_pts.csv"
+        new_filename = filename.split('.')[0] + ".csv"
         with open(f'data/playins_team_data/{new_filename}', 'w') as f:
             # write the header
-            f.write("gameid, league, split, playoffs, series_num, game_num, ego_team, opp_team, gamelength, top_player, top_champion, top_primary_kills, top_primary_deaths, top_primary_assists, top_primary_total_cs, jgl_player, jgl_champion, jgl_primary_kills, jgl_primary_deaths, jgl_primary_assists, jgl_primary_total_cs, mid_player, mid_champion, mid_primary_kills, mid_primary_deaths, mid_primary_assists, mid_primary_total_cs, bot_player, bot_champion, bot_primary_kills, bot_primary_deaths, bot_primary_assists, bot_primary_total_cs, sup_player, sup_champion, sup_primary_kills, sup_primary_deaths, sup_primary_assists, sup_primary_total_cs, constant_turrets, constant_dragons, constant_heralds, constant_barons, constant_win, constant_win_under_30, constant_first_blood\n")
+            f.write("gameid,league,split,playoffs,series_num,game_num,ego_team,opp_team,gamelength,top_player,top_champion,top_primary_kills,top_primary_deaths,top_primary_assists,top_primary_total_cs,jgl_player,jgl_champion,jgl_primary_kills,jgl_primary_deaths,jgl_primary_assists,jgl_primary_total_cs,mid_player,mid_champion,mid_primary_kills,mid_primary_deaths,mid_primary_assists,mid_primary_total_cs,bot_player,bot_champion,bot_primary_kills,bot_primary_deaths,bot_primary_assists,bot_primary_total_cs,sup_player,sup_champion,sup_primary_kills,sup_primary_deaths,sup_primary_assists,sup_primary_total_cs,constant_turrets,constant_dragons,constant_heralds,constant_barons,constant_win,constant_win_under_30,constant_first_blood\n")
 
             df = pd.read_csv(f'data/team_data/{filename}')
             team_name = filename.split('_')[0]
@@ -144,10 +146,9 @@ for filename in os.listdir('data/team_data'): # relative path
                 # bot_player, bot_champion, bot_primary_kills, bot_primary_deaths, bot_primary_assists, bot_primary_total_cs, 
                 # sup_player, sup_champion, sup_primary_kills, sup_primary_deaths, sup_primary_assists, sup_primary_total_cs, 
                 # contant_towers, constant_dragons, constant_heralds, constant_barons, constant_result, constant_win_under_30, constant_firstblood
-                # include opp player / champ / rank later
                 relevant_match_info = {} 
 
-                # game_id, league, split, playoffs, series_num, game_num, ego_team, opp_team
+                # gameid, league, split, playoffs, series_num, game, ego_team, opp_team, gamelength,
                 # top_player, top_primary_kill_pts, top_primary_death_pts, top_primary_assist_pts, top_primary_cs_pts,
                 # jgl_player, jgl_primary_kill_pts, jgl_primary_death_pts, jgl_primary_assist_pts, jgl_primary_cs_pts, 
                 # mid_player, mid_primary_kill_pts, mid_primary_death_pts, mid_primary_assist_pts, mid_primary_cs_pts, 
@@ -295,10 +296,156 @@ for filename in os.listdir('data/team_data'): # relative path
                 relevant_match_info["constant_first_blood"] = constant_first_blood
 
                 # write relevant match info to csv
-                f.write(f"{relevant_match_info['gameid']}, {relevant_match_info['league']}, {relevant_match_info['split']}, {relevant_match_info['playoffs']}, {relevant_match_info['series_num']}, {relevant_match_info['game_num']}, {relevant_match_info['ego_team']}, {relevant_match_info['opp_team']}, {relevant_match_info['game_length']}, {relevant_match_info['top_player']}, {relevant_match_info['top_champion']}, {relevant_match_info['top_primary_kills']}, {relevant_match_info['top_primary_deaths']}, {relevant_match_info['top_primary_assists']}, {relevant_match_info['top_primary_total_cs']}, {relevant_match_info['jgl_player']}, {relevant_match_info['jgl_champion']}, {relevant_match_info['jgl_primary_kills']}, {relevant_match_info['jgl_primary_deaths']}, {relevant_match_info['jgl_primary_assists']}, {relevant_match_info['jgl_primary_total_cs']}, {relevant_match_info['mid_player']}, {relevant_match_info['mid_champion']}, {relevant_match_info['mid_primary_kills']}, {relevant_match_info['mid_primary_deaths']}, {relevant_match_info['mid_primary_assists']}, {relevant_match_info['mid_primary_total_cs']}, {relevant_match_info['bot_player']}, {relevant_match_info['bot_champion']}, {relevant_match_info['bot_primary_kills']}, {relevant_match_info['bot_primary_deaths']}, {relevant_match_info['bot_primary_assists']}, {relevant_match_info['bot_primary_total_cs']}, {relevant_match_info['sup_player']}, {relevant_match_info['sup_champion']}, {relevant_match_info['sup_primary_kills']}, {relevant_match_info['sup_primary_deaths']}, {relevant_match_info['sup_primary_assists']}, {relevant_match_info['sup_primary_total_cs']}, {relevant_match_info['constant_turrets']}, {relevant_match_info['constant_dragons']}, {relevant_match_info['constant_heralds']}, {relevant_match_info['constant_barons']}, {relevant_match_info['constant_win']}, {relevant_match_info['constant_win_under_30']}, {relevant_match_info['constant_first_blood']}\n")
+                f.write(f"{relevant_match_info['gameid']},{relevant_match_info['league']},{relevant_match_info['split']},{relevant_match_info['playoffs']},{relevant_match_info['series_num']},{relevant_match_info['game_num']},{relevant_match_info['ego_team']},{relevant_match_info['opp_team']},{relevant_match_info['game_length']},{relevant_match_info['top_player']},{relevant_match_info['top_champion']},{relevant_match_info['top_primary_kills']},{relevant_match_info['top_primary_deaths']},{relevant_match_info['top_primary_assists']},{relevant_match_info['top_primary_total_cs']},{relevant_match_info['jgl_player']},{relevant_match_info['jgl_champion']},{relevant_match_info['jgl_primary_kills']},{relevant_match_info['jgl_primary_deaths']},{relevant_match_info['jgl_primary_assists']},{relevant_match_info['jgl_primary_total_cs']},{relevant_match_info['mid_player']},{relevant_match_info['mid_champion']},{relevant_match_info['mid_primary_kills']},{relevant_match_info['mid_primary_deaths']},{relevant_match_info['mid_primary_assists']},{relevant_match_info['mid_primary_total_cs']},{relevant_match_info['bot_player']},{relevant_match_info['bot_champion']},{relevant_match_info['bot_primary_kills']},{relevant_match_info['bot_primary_deaths']},{relevant_match_info['bot_primary_assists']},{relevant_match_info['bot_primary_total_cs']},{relevant_match_info['sup_player']},{relevant_match_info['sup_champion']},{relevant_match_info['sup_primary_kills']},{relevant_match_info['sup_primary_deaths']},{relevant_match_info['sup_primary_assists']},{relevant_match_info['sup_primary_total_cs']},{relevant_match_info['constant_turrets']},{relevant_match_info['constant_dragons']},{relevant_match_info['constant_heralds']},{relevant_match_info['constant_barons']},{relevant_match_info['constant_win']},{relevant_match_info['constant_win_under_30']},{relevant_match_info['constant_first_blood']}\n")
 
 print("Done!")  
-            
+
+# Load the multi-nested JSON object
+with open('info/static_vals.json') as json_file:
+    fantasy_static_vals = json.load(json_file)
+
+match_pts_info = {}
+
+# calculate points / make new spreadsheet per team in play-ins for their score
+for filename in os.listdir('data/playins_team_data'): # relative path
+    if filename.endswith('.csv'):
+
+        # create new csv file in /data/playins_team_data/{filename}
+        new_filename = filename.split('.')[0] + "_pts.csv"
+
+        with open(f'data/playins_team_score/{new_filename}', 'w') as f:
+            # write the header
+            f.write("gameid,league,split,playoffs,series_num,game_num,ego_team,opp_team,gamelength,top_player,top_champion,top_primary_kills,top_primary_kill_pts,top_primary_deaths,top_primary_death_pts,top_primary_assists,top_primary_assists_pts,top_primary_total_cs,top_primary_total_cs_pts,jgl_player,jgl_champion,jgl_primary_kills,jgl_primary_kills_pts,jgl_primary_deaths,jgl_primary_deaths_pts,jgl_primary_assists,jgl_primary_assists_pts,jgl_primary_total_cs,jgl_primary_total_cs_pts,mid_player,mid_champion,mid_primary_kills,mid_primary_kills_pts,mid_primary_deaths,mid_primary_deaths_pts,mid_primary_assists,mid_primary_assists_pts,mid_primary_total_cs,mid_primary_total_cs_pts,bot_player,bot_champion,bot_primary_kills,bot_primary_kills_pts,bot_primary_deaths,bot_primary_deaths_pts,bot_primary_assists,bot_primary_assists_pts,bot_primary_total_cs,bot_primary_total_cs_pts,sup_player,sup_champion,sup_primary_kills,sup_primary_kills_pts,sup_primary_deaths,sup_primary_deaths_pts,sup_primary_assists,sup_primary_assists_pts,sup_primary_total_cs,sup_primary_total_cs_pts,constant_turrets,constant_turrets_pts,constant_dragons,constant_dragons_pts,constant_heralds,constant_heralds_pts,constant_barons,constant_barons_pts,constant_win,constant_win_pts,constant_win_under_30,constant_win_under_30_pts,constant_first_blood,constant_first_blood_pts,top_kda_pts,jgl_kda_pts,mid_kda_pts,bot_kda_pts,sup_kda_pts,tdfbh_pts,top_total_pts,jgl_total_pts,mid_total_pts,bot_total_pts,sup_total_pts\n")
+
+            df = pd.read_csv(f'data/playins_team_data/{filename}') # read the csv file
+
+            # extract match info in each gameid in the dataframe
+            # for each row in the dataframe
+
+            for index, row in df.iterrows():
+                gameid = row['gameid'] 
+                league = row['league'] 
+                league = row['league']
+                split = row['split']
+                playoffs = row['playoffs']
+                series_num = row['series_num']
+                game_num = row['game_num']
+                ego_team = row['ego_team']
+                opp_team = row['opp_team']
+                gamelength = row['gamelength']
+                top_player = row['top_player']
+                top_champion = row['top_champion']
+                top_primary_kills = row['top_primary_kills']
+                top_primary_deaths = row['top_primary_deaths']
+                top_primary_assists = row['top_primary_assists']
+                top_primary_total_cs = row['top_primary_total_cs']
+                jgl_player = row['jgl_player']
+                jgl_champion = row['jgl_champion']
+                jgl_primary_kills = row['jgl_primary_kills']
+                jgl_primary_deaths = row['jgl_primary_deaths']
+                jgl_primary_assists =  row['jgl_primary_assists']
+                jgl_primary_total_cs = row['jgl_primary_total_cs']
+                mid_player = row['mid_player']
+                mid_champion = row['mid_champion']
+                mid_primary_kills = row['mid_primary_kills']
+                mid_primary_deaths = row['mid_primary_deaths']
+                mid_primary_assists = row['mid_primary_assists']
+                mid_primary_total_cs = row['mid_primary_total_cs']
+                bot_player = row['bot_player']
+                bot_champion = row['bot_champion']
+                bot_primary_kills = row['bot_primary_kills']
+                bot_primary_deaths = row['bot_primary_deaths']
+                bot_primary_assists = row['bot_primary_assists']
+                bot_primary_total_cs = row['bot_primary_total_cs']  
+                sup_player = row['sup_player']
+                sup_champion = row['sup_champion']
+                sup_primary_kills = row['sup_primary_kills']
+                sup_primary_deaths = row['sup_primary_deaths']
+                sup_primary_assists = row['sup_primary_assists']
+                sup_primary_total_cs = row['sup_primary_total_cs']
+                constant_turrets = row['constant_turrets']
+                constant_dragons = row['constant_dragons']
+                constant_heralds = row['constant_heralds']
+                constant_barons = row['constant_barons']
+                constant_win = row['constant_win']
+                constant_win_under_30 = row['constant_win_under_30']
+                constant_first_blood = row['constant_first_blood']
+
+                # calculate points for each player
+                top_primary_kill_pts = round(float(top_primary_kills) * float(fantasy_static_vals['primary']['kills']['top']), 4)
+                top_primary_death_pts = round(float(top_primary_deaths) * float(fantasy_static_vals['primary']['deaths']['top']), 4)
+                top_primary_assists_pts = round(float(top_primary_assists) * float(fantasy_static_vals['primary']['assists']['top']), 4)
+                top_kda_pts = round(top_primary_kill_pts + top_primary_death_pts + top_primary_assists_pts, 4)
+                top_primary_total_cs_pts = round(float(top_primary_total_cs) * float(fantasy_static_vals['primary']['cs']['top']), 4)
+
+                jgl_primary_kills_pts = round(float(jgl_primary_kills) * float(fantasy_static_vals['primary']['kills']['jgl']), 4)
+                jgl_primary_death_pts = round(float(jgl_primary_deaths) * float(fantasy_static_vals['primary']['deaths']['jgl']), 4)
+                jgl_primary_assists_pts = round(float(jgl_primary_assists) * float(fantasy_static_vals['primary']['assists']['jgl']), 4)
+                jgl_kda_pts = round(jgl_primary_kills_pts + jgl_primary_death_pts + jgl_primary_assists_pts, 4)
+                jgl_primary_total_cs_pts = round(float(jgl_primary_total_cs) * float(fantasy_static_vals['primary']['cs']['jgl']), 4)
+
+                mid_primary_kills_pts = round(float(mid_primary_kills) * float(fantasy_static_vals['primary']['kills']['mid']), 4)
+                mid_primary_death_pts = round(float(mid_primary_deaths) * float(fantasy_static_vals['primary']['deaths']['mid']), 4)
+                mid_primary_assists_pts = round(float(mid_primary_assists) * float(fantasy_static_vals['primary']['assists']['mid']), 4)
+                mid_kda_pts = round(mid_primary_kills_pts + mid_primary_death_pts + mid_primary_assists_pts, 4)
+                mid_primary_total_cs_pts = round(float(mid_primary_total_cs) * float(fantasy_static_vals['primary']['cs']['mid']), 4)
+
+                bot_primary_kills_pts = round(float(bot_primary_kills) * float(fantasy_static_vals['primary']['kills']['bot']), 4)
+                bot_primary_death_pts = round(float(bot_primary_deaths) * float(fantasy_static_vals['primary']['deaths']['bot']), 4)
+                bot_primary_assists_pts = round(float(bot_primary_assists) * float(fantasy_static_vals['primary']['assists']['bot']), 4)
+                bot_kda_pts = round(bot_primary_kills_pts + bot_primary_death_pts + bot_primary_assists_pts, 4)
+                bot_primary_total_cs_pts = round(float(bot_primary_total_cs) * float(fantasy_static_vals['primary']['cs']['bot']), 4)
+
+                sup_primary_kills_pts = round(float(sup_primary_kills) * float(fantasy_static_vals['primary']['kills']['sup']), 4)
+                sup_primary_death_pts = round(float(sup_primary_deaths) * float(fantasy_static_vals['primary']['deaths']['sup']), 4)
+                sup_primary_assists_pts = round(float(sup_primary_assists) * float(fantasy_static_vals['primary']['assists']['sup']), 4)
+                sup_kda_pts = round(sup_primary_kills_pts + sup_primary_death_pts + sup_primary_assists_pts, 4)
+                sup_primary_total_cs_pts = round(float(sup_primary_total_cs) * float(fantasy_static_vals['primary']['cs']['sup']), 4)
+
+                constant_turrets_pts = round(float(constant_turrets) * float(fantasy_static_vals['constant']['turret']), 4)
+                constant_dragons_pts = round(float(constant_dragons) * float(fantasy_static_vals['constant']['dragon']), 4)
+                constant_first_blood_pts = round(float(constant_first_blood) * float(fantasy_static_vals['constant']['first_blood']), 4)
+                constant_barons_pts = round(float(constant_barons) * float(fantasy_static_vals['constant']['baron']), 4)
+                constant_heralds_pts = round(float(constant_heralds) * float(fantasy_static_vals['constant']['herald']), 4)
+                constant_tdfbh_pts = round(constant_turrets_pts + constant_dragons_pts + constant_heralds_pts + constant_barons_pts + constant_first_blood_pts, 4)
+
+                constant_win_pts = round(float(constant_win) * float(fantasy_static_vals['constant']['win']), 4) # can be (0 or 1) * 2
+                constant_win_under_30_pts = round(float(constant_win_under_30) * float(fantasy_static_vals['constant']['win_under_30']), 4) # can be (0 or 1) * 1
+
+                top_total_pts = round(top_kda_pts + top_primary_total_cs_pts + constant_tdfbh_pts + constant_win_pts + constant_win_under_30_pts, 4)
+                jgl_total_pts = round(jgl_kda_pts + jgl_primary_total_cs_pts + constant_tdfbh_pts + constant_win_pts + constant_win_under_30_pts, 4)
+                mid_total_pts = round(mid_kda_pts + mid_primary_total_cs_pts + constant_tdfbh_pts + constant_win_pts + constant_win_under_30_pts, 4)
+                bot_total_pts = round(bot_kda_pts + bot_primary_total_cs_pts + constant_tdfbh_pts + constant_win_pts + constant_win_under_30_pts, 4)
+                sup_total_pts = round(sup_kda_pts + sup_primary_total_cs_pts + constant_tdfbh_pts + constant_win_pts + constant_win_under_30_pts, 4)
+
+                f.write(f"{gameid},{league},{split},{playoffs},{series_num},{game_num},{ego_team},{opp_team},{gamelength},{top_player},{top_champion},{top_primary_kills},{top_primary_kill_pts},{top_primary_deaths},{top_primary_death_pts},{top_primary_assists},{top_primary_assists_pts},{top_primary_total_cs},{top_primary_total_cs_pts},{jgl_player},{jgl_champion},{jgl_primary_kills},{jgl_primary_kills_pts},{jgl_primary_deaths},{jgl_primary_death_pts},{jgl_primary_assists},{jgl_primary_assists_pts},{jgl_primary_total_cs},{jgl_primary_total_cs_pts},{mid_player},{mid_champion},{mid_primary_kills},{mid_primary_kills_pts},{mid_primary_deaths},{mid_primary_death_pts},{mid_primary_assists},{mid_primary_assists_pts},{mid_primary_total_cs},{mid_primary_total_cs_pts},{bot_player},{bot_champion},{bot_primary_kills},{bot_primary_kills_pts},{bot_primary_deaths},{bot_primary_death_pts},{bot_primary_assists},{bot_primary_assists_pts},{bot_primary_total_cs},{bot_primary_total_cs_pts},{sup_player},{sup_champion},{sup_primary_kills},{sup_primary_kills_pts},{sup_primary_deaths},{sup_primary_death_pts},{sup_primary_assists},{sup_primary_assists_pts},{sup_primary_total_cs},{sup_primary_total_cs_pts},{constant_turrets},{constant_turrets_pts},{constant_dragons},{constant_dragons_pts},{constant_heralds},{constant_heralds_pts},{constant_barons},{constant_barons_pts},{constant_win},{constant_win_pts},{constant_win_under_30},{constant_win_under_30_pts},{constant_first_blood},{constant_first_blood_pts},{top_kda_pts},{jgl_kda_pts},{mid_kda_pts},{bot_kda_pts},{sup_kda_pts},{constant_tdfbh_pts},{top_total_pts},{jgl_total_pts},{mid_total_pts},{bot_total_pts},{sup_total_pts}\n")
+print("Done!")
+
+### OVERALL STATS
+# Position / Player who carries the MOST games
+# ON WINS ... rank player / position who carries most + points
+# ON LOSSES ... rank player / position who carries most + points
+
+# for each team in important_teams, find all the respective csv files in /data/playins_team_score and store in a list
+team_csv_files = {}
+for team in important_teams:
+    team_csv_files[team] = []
+    for filename in os.listdir('data/playins_team_score'):
+        if filename.startswith(f"{team}_"):
+            team_csv_files[team].append(filename)
+                            
+                
+                            
+                            
+
+                    
+
+                    
+
+                
+
+                
+
 
 
        
