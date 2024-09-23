@@ -463,11 +463,6 @@ for filename in os.listdir('data/03_playins_team_data'): # relative path
                 f.write(f"{gameid},{league},{split},{playoffs},{series_num},{game_num},{ego_team},{opp_team},{gamelength},{top_player},{top_champion},{top_primary_kills},{top_primary_kill_pts},{top_primary_deaths},{top_primary_death_pts},{top_primary_assists},{top_primary_assists_pts},{top_primary_total_cs},{top_primary_total_cs_pts},{jgl_player},{jgl_champion},{jgl_primary_kills},{jgl_primary_kills_pts},{jgl_primary_deaths},{jgl_primary_death_pts},{jgl_primary_assists},{jgl_primary_assists_pts},{jgl_primary_total_cs},{jgl_primary_total_cs_pts},{mid_player},{mid_champion},{mid_primary_kills},{mid_primary_kills_pts},{mid_primary_deaths},{mid_primary_death_pts},{mid_primary_assists},{mid_primary_assists_pts},{mid_primary_total_cs},{mid_primary_total_cs_pts},{bot_player},{bot_champion},{bot_primary_kills},{bot_primary_kills_pts},{bot_primary_deaths},{bot_primary_death_pts},{bot_primary_assists},{bot_primary_assists_pts},{bot_primary_total_cs},{bot_primary_total_cs_pts},{sup_player},{sup_champion},{sup_primary_kills},{sup_primary_kills_pts},{sup_primary_deaths},{sup_primary_death_pts},{sup_primary_assists},{sup_primary_assists_pts},{sup_primary_total_cs},{sup_primary_total_cs_pts},{constant_turrets},{constant_turrets_pts},{constant_dragons},{constant_dragons_pts},{constant_heralds},{constant_heralds_pts},{constant_barons},{constant_barons_pts},{constant_win},{constant_win_pts},{constant_win_under_30},{constant_win_under_30_pts},{constant_first_blood},{constant_first_blood_pts},{top_kda_pts},{jgl_kda_pts},{mid_kda_pts},{bot_kda_pts},{sup_kda_pts},{constant_tdfbh_pts},{top_total_pts},{jgl_total_pts},{mid_total_pts},{bot_total_pts},{sup_total_pts}\n")
 print("Done!")
 
-### OVERALL STATS
-# Position / Player who carries the MOST games
-# ON WINS ... rank player / position who carries most + points
-# ON LOSSES ... rank player / position who carries most + points
-
 # for each team in important_teams, find all the respective csv files in /data/playins_team_score and store in a list
 team_csv_files = {}
 for team in important_teams:
@@ -491,26 +486,101 @@ for team in important_teams:
         team_combined_df_files[team].append(df)
     
     temp_df = pd.concat(team_combined_df_files[team]) # combine all the dfs into one df    
-
-    # team_combined_df_files[team] = temp_df.sort_values(by=['gameid']) # .reset_index(drop=True)
-    # team_combined_df_files[team] = temp_df.assign(gameid_numeric=temp_df['gameid'].str.extract(r'(\d+)$').astype(int)).sort_values(by='gameid_numeric').drop(columns='gameid_numeric')
-    # team_combined_df_files[team] = temp_df.assign(
-    #     prefix=temp_df['gameid'].str.split('_').str[0],
-    #     gameid_numeric=temp_df['gameid'].str.split('_').str[1].astype(int)
-    # ).sort_values(by=['prefix', 'gameid_numeric']).drop(columns=['prefix', 'gameid_numeric'])
     team_combined_df_files[team] = temp_df.assign(
         series_num_numeric=temp_df['series_num'].apply(alpha_to_num),  # Convert series_num to a sortable numeric value
         game_num_numeric=temp_df['game_num'].astype(int)  # Convert game_num from string to int
     ).sort_values(by=['series_num_numeric', 'game_num_numeric'])  # Sort by the new numeric columns
-    
+
     team_combined_df_files[team] = team_combined_df_files[team].drop(columns=['series_num_numeric', 'game_num_numeric']) # drop the numeric columns
 
 # create a csv file for each team df in team_combined_df_files and store in /data/04_playins_team_score_combined
 for team in important_teams:
     team_combined_df_files[team].to_csv(f'data/05_playins_team_score_combined/{team}_combined.csv', index=False)
 
-# for each team in team_combined_df_files, find the player who carries the most games
-player_most_games = {}
+### OVERALL STATS
+# Position / Player who carries the MOST games
+# ON WINS ... rank player / position who carries most + points
+# ON LOSSES ... rank player / position who carries most + points
+
+# for each team in csv files in 05_playins_team_score_combined, find the player who carries the most games (aka has the most points)
+# you can find the player who carries the most games by looking in the top_total_pts, jgl_total_pts, mid_total_pts, bot_total_pts, sup_total_pts columns
+player_point_combos = {}
+player_carry_potential = {}
+
+# start by every game for a team, store a list ranking tuple of playername and their respective points for that game
+for team in important_teams:
+    # store a list of tuples of playername and their respective points for that game
+    player_point_combos[team] = []
+
+    # assume range from 0 to 25
+    # based on every player + their point value per game, calculate a standardized value from 0 to 10 based on their 0 to 25 point score range and keep a running total
+    player_carry_potential[team] = {}
+
+    df = pd.read_csv(f'data/05_playins_team_score_combined/{team}_combined.csv')
+
+    for index, row in df.iterrows():
+        top_player = row['top_player']
+        top_total_pts = row['top_total_pts']
+        jgl_player = row['jgl_player']
+        jgl_total_pts = row['jgl_total_pts']
+        mid_player = row['mid_player']
+        mid_total_pts = row['mid_total_pts']
+        bot_player = row['bot_player']
+        bot_total_pts = row['bot_total_pts']
+        sup_player = row['sup_player']
+        sup_total_pts = row['sup_total_pts']
+
+        # create a tuple of playername and their respective points for that game add all the tuples to a list 
+        player_point_combos[team].append((top_player, top_total_pts, round((top_total_pts / 25) * 10, 2)))
+        player_point_combos[team].append((jgl_player, jgl_total_pts, round((jgl_total_pts / 25) * 10, 2)))
+        player_point_combos[team].append((mid_player, mid_total_pts, round((mid_total_pts / 25) * 10, 2)))
+        player_point_combos[team].append((bot_player, bot_total_pts, round((bot_total_pts / 25) * 10, 2)))
+        player_point_combos[team].append((sup_player, sup_total_pts, round((sup_total_pts / 25) * 10, 2)))
+
+        # sort the list in decreasing total_pts order
+        player_point_combos[team].sort(key=lambda x: x[1], reverse=True)
+
+    # add the standardized value and # of games played to the player_carry_potential dictionary
+    for player, points, standardized_points in player_point_combos[team]:
+        if player not in player_carry_potential[team]:
+            player_carry_potential[team][player] = {}
+            player_carry_potential[team][player]['standardized_score'] = standardized_points
+            player_carry_potential[team][player]['games_played'] = 1
+        else:
+            player_carry_potential[team][player]['standardized_score'] += standardized_points
+            player_carry_potential[team][player]['games_played'] += 1
+
+# print player_carry_potential 
+player_standardized_carry_potential = {}
+for team in important_teams:
+    player_standardized_carry_potential[team] = []
+    print(f"[{team}]")
+    for player in player_carry_potential[team]:
+        # print player standardized score / # of games played
+        print(f"{player}: {(player_carry_potential[team][player]['standardized_score'] / player_carry_potential[team][player]['games_played'])}")
+        player_standardized_carry_potential[team].append((player, (player_carry_potential[team][player]['standardized_score'] / player_carry_potential[team][player]['games_played'])))
+    print()
+
+# store the player who has highest standardized carry potential + associated # of games played in a txt file called /info/player_most_games.txt
+with open('info/player_carry_potential.txt', 'w') as f:
+    for team in important_teams:
+        f.write(f"[{team}]\n")
+        for player, standardized_score in player_standardized_carry_potential[team]:
+            f.write(f"{player}: {standardized_score}\n") # write player and standardized score
+            f.write(f"Games Played: {player_carry_potential[team][player]['games_played']}\n") # write number of games played for player 
+        f.write("\n")
+
+# lowest_points = player_most_games[team][-1][1] ... 0.51
+# highest_points = player_most_games[team][0][1] ... 19.95 Kiaya
+
+
+
+        
+
+
+
+        
+
 
 
                             

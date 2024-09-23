@@ -1,0 +1,118 @@
+[PSG Talon]
+Maple: 4.468840579710144
+Games Played: 69
+Woody: 4.136811594202899
+Games Played: 69
+JunJia: 4.532753623188406
+Games Played: 69
+Betty: 4.572173913043477
+Games Played: 69
+Azhi: 4.654057971014491
+Games Played: 69
+
+[Fukuoka SoftBank HAWKS gaming]
+Marble: 4.466853932584271
+Games Played: 89
+Vsta: 4.120000000000001
+Games Played: 89
+Forest: 4.4376404494382005
+Games Played: 89
+Evi: 4.4461797752809
+Games Played: 89
+DasheR: 4.63370786516854
+Games Played: 89
+
+[Vikings Esports]
+Shogun: 4.445696202531646
+Games Played: 79
+Nanaue: 4.606904761904763
+Games Played: 42
+Gury: 4.275652173913043
+Games Played: 69
+Fireblade: 4.276000000000001
+Games Played: 10
+Kati: 4.543037974683542
+Games Played: 79
+Kratos: 4.386666666666666
+Games Played: 27
+SofM: 3.9979999999999998
+Games Played: 10
+Tomrio: 4.365000000000001
+Games Played: 10
+Bie: 4.090476190476189
+Games Played: 42
+Kairi: 3.2966666666666664
+Games Played: 27
+
+[GAM Esports]
+Kiaya: 5.172658227848101
+Games Played: 79
+Elio: 4.260253164556962
+Games Played: 79
+Levi: 4.727341772151898
+Games Played: 79
+Emo: 4.680377358490565
+Games Played: 53
+EasyLove: 4.707499999999999
+Games Played: 32
+Neo: 4.282500000000001
+Games Played: 20
+Pyshiro: 4.704814814814814
+Games Played: 27
+Blazes: 4.665769230769232
+Games Played: 26
+
+[100 Thieves]
+Eyla: 3.332833333333334
+Games Played: 60
+Quid: 3.925666666666666
+Games Played: 60
+Sniper: 3.7721666666666667
+Games Played: 60
+Tomo: 3.911304347826088
+Games Played: 23
+Meech: 3.3951351351351344
+Games Played: 37
+River: 3.632166666666667
+Games Played: 60
+
+[MAD Lions KOI]
+Supa: 3.966666666666665
+Games Played: 75
+Myrwn: 4.069733333333334
+Games Played: 75
+Fresskowy: 3.7048000000000023
+Games Played: 75
+Elyoya: 3.6754666666666664
+Games Played: 75
+Alvaro: 3.1905333333333337
+Games Played: 75
+
+[paiN Gaming]
+TitaN: 4.77676470588235
+Games Played: 68
+Wizer: 4.77558823529412
+Games Played: 68
+Kuri: 4.001764705882355
+Games Played: 68
+CarioK: 4.215735294117645
+Games Played: 68
+dyNquedo: 4.49
+Games Played: 68
+
+[Movistar R7]
+Lyonz: 4.0597142857142865
+Games Played: 70
+Ceo: 4.35507042253521
+Games Played: 71
+Summit: 4.721126760563378
+Games Played: 71
+Oddie: 4.33542857142857
+Games Played: 70
+Keine: 4.566875000000002
+Games Played: 32
+Lava: 4.327692307692309
+Games Played: 39
+Daiky: 4.475
+Games Played: 2
+
