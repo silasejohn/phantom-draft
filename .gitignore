@@ -3,8 +3,4 @@
 league-env/*
 *.csv
 data/*.csv
-data/league_data/*
-data/team_data/*
-data/playins_team_data/*
-data/playins_team_score/*
 utility/__pycache__/*
