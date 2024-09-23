@@ -13,7 +13,7 @@ multi_league_df = create_multi_league_df()
 leagues = multi_league_df['league'].unique()
 for league in leagues:
     league_df = create_single_league_df(multi_league_df, league)
-    export_df_to_csv(league_df, f'data/league_data/{league}_league.csv')
+    export_df_to_csv(league_df, f'data/01_league_data/{league}_league.csv')
 
 important_teams = ['PSG Talon', 'Fukuoka SoftBank HAWKS gaming', 'Vikings Esports', 'GAM Esports', '100 Thieves', 'MAD Lions KOI', 'paiN Gaming', 'Movistar R7']
 # create a dictionary with team names as keys and leagues as values
@@ -29,6 +29,7 @@ for team in important_teams:
 
 # for every team and each split they have been in, create a dataframe, export to csv and store in /data/team_data
 for team in important_teams:
+    series_num = "~" # initialize series_num to "~"
     for split in team_splits[team]:
         if pd.isna(split):
             continue # skip if split is NaN
@@ -37,14 +38,56 @@ for team in important_teams:
         non_playoff_df, playoff_df = create_single_split_team_df(multi_league_df, team, split)
         
         # export to csv for non-playoff games
-        if not non_playoff_df.empty:
+        if not non_playoff_df.empty: 
+            
+            unique_gameids = non_playoff_df['gameid'].unique() # find unique gameids
+            non_playoff_df.insert(4, 'series_num', series_num) # add series_num to the dataframe before "game_num" header
+            
+            for gameid in unique_gameids:
+                game_df = non_playoff_df[non_playoff_df['gameid'] == gameid] # all rows with the same gameid
+
+                # if game is "1", increment series_num by 1 Letter 
+                # if series_num is "Z", increment series_num to "A"
+                if game_df['game'].values[0] == 1:
+                    if series_num == "~":
+                        series_num = "A"
+                    elif series_num == "Z":
+                        series_num = "AA"
+                    else:
+                        # get the last char of the series_num (even if there are multiple chars) and increment by one char
+                        series_num = series_num[:-1] + chr(ord(series_num[-1]) + 1)
+                
+                # for all rows with the same gameid, update the series_num
+                non_playoff_df.loc[non_playoff_df['gameid'] == gameid, 'series_num'] = series_num
+
             non_playoff_filename = f"{team}_{split}.csv"
-            non_playoff_df.to_csv(f"data/team_data/{non_playoff_filename}", index=False)
+            non_playoff_df.to_csv(f"data/02_team_data/{non_playoff_filename}", index=False)
 
         # export to csv for playoff games
         if not playoff_df.empty:
+
+            unique_gameids = playoff_df['gameid'].unique() # find unique gameids
+            playoff_df.insert(4, 'series_num', series_num) # add series_num to the dataframe before "game_num" header
+
+            for gameid in unique_gameids:
+                game_df = playoff_df[playoff_df['gameid'] == gameid] # all rows with the same gameid
+
+                # if game is "1", increment series_num by 1 Letter 
+                # if series_num is "Z", increment series_num to "A"
+                if game_df['game'].values[0] == 1:
+                    if series_num == "~":
+                        series_num = "A"
+                    elif series_num == "Z":
+                        series_num = "AA"
+                    else:
+                        # get the last char of the series_num (even if there are multiple chars) and increment by one char
+                        series_num = series_num[:-1] + chr(ord(series_num[-1]) + 1)
+                        
+                # for all rows with the same gameid, update the series_num
+                playoff_df.loc[playoff_df['gameid'] == gameid, 'series_num'] = series_num
+
             playoff_filename = f"{team}_{split}_Playoffs.csv"
-            playoff_df.to_csv(f"data/team_data/{playoff_filename}", index=False)
+            playoff_df.to_csv(f"data/02_team_data/{playoff_filename}", index=False)
 
 def custom_role_sort_key(item):
     priority_list = ['top', 'jng', 'mid', 'bot', 'sup']
@@ -78,14 +121,13 @@ with open('info/playins_teams.txt', 'w') as f:
 
 # for every csv in /data/team_data folder, find total number of unique gameids per csv and print
 output = []
-for filename in os.listdir('data/team_data'): # relative path
+for filename in os.listdir('data/02_team_data'): # relative path
     if filename.endswith('.csv'):
-        df = pd.read_csv(f'data/team_data/{filename}')
+        df = pd.read_csv(f'data/02_team_data/{filename}')
         unique_gameids = df['gameid'].nunique() # find unique gameids
 
         # store all unique gameids in a list
         unique_gameids = df['gameid'].unique()
-        # print(unique_gameids)
 
         # find unique gameids for when game is '1'
         unique_series = df[df['game'] == 1]['gameid'].nunique()
@@ -118,16 +160,16 @@ with open('info/playins_history.txt', 'w') as f:
     f.write("\n")
 
 # calculate points / make new spreadsheet per team in play-ins
-for filename in os.listdir('data/team_data'): # relative path
+for filename in os.listdir('data/02_team_data'): # relative path
     if filename.endswith('.csv'):
 
         # create new csv file in /data/playins_team_data/{filename}
         new_filename = filename.split('.')[0] + ".csv"
-        with open(f'data/playins_team_data/{new_filename}', 'w') as f:
+        with open(f'data/03_playins_team_data/{new_filename}', 'w') as f:
             # write the header
             f.write("gameid,league,split,playoffs,series_num,game_num,ego_team,opp_team,gamelength,top_player,top_champion,top_primary_kills,top_primary_deaths,top_primary_assists,top_primary_total_cs,jgl_player,jgl_champion,jgl_primary_kills,jgl_primary_deaths,jgl_primary_assists,jgl_primary_total_cs,mid_player,mid_champion,mid_primary_kills,mid_primary_deaths,mid_primary_assists,mid_primary_total_cs,bot_player,bot_champion,bot_primary_kills,bot_primary_deaths,bot_primary_assists,bot_primary_total_cs,sup_player,sup_champion,sup_primary_kills,sup_primary_deaths,sup_primary_assists,sup_primary_total_cs,constant_turrets,constant_dragons,constant_heralds,constant_barons,constant_win,constant_win_under_30,constant_first_blood\n")
 
-            df = pd.read_csv(f'data/team_data/{filename}')
+            df = pd.read_csv(f'data/02_team_data/{filename}')
             team_name = filename.split('_')[0]
 
             total_games = df['gameid'].nunique()
@@ -135,7 +177,7 @@ for filename in os.listdir('data/team_data'): # relative path
             # find unique gameids 
             unique_gameids = df['gameid'].unique()
 
-            series_num = "Z" # initialize series_num to "Z"
+            # series_num = "Z" # initialize series_num to "Z"
 
             # extract match info
             for gameid in unique_gameids:
@@ -161,17 +203,17 @@ for filename in os.listdir('data/team_data'): # relative path
 
                 # if game is "1", increment series_num by 1 Letter 
                 # if series_num is "Z", increment series_num to "A"
-                if game_df['game'].values[0] == 1:
-                    if series_num == "Z":
-                        series_num = "A"
-                    else:
-                        series_num = chr(ord(series_num) + 1)
+                # if game_df['game'].values[0] == 1:
+                #     if series_num == "Z":
+                #         series_num = "A"
+                #     else:
+                #         series_num = chr(ord(series_num) + 1)
                 
                 relevant_match_info["gameid"] = gameid
                 relevant_match_info["league"] = game_df['league'].values[0]
                 relevant_match_info["split"] = game_df['split'].values[0]
                 relevant_match_info["playoffs"] = game_df['playoffs'].values[0]
-                relevant_match_info["series_num"] = series_num
+                relevant_match_info["series_num"] = game_df['series_num'].values[0]
                 relevant_match_info["game_num"] = game_df['game'].values[0]
                 
                 # pull the "teamname" from row with participantid of 100
@@ -307,17 +349,17 @@ with open('info/static_vals.json') as json_file:
 match_pts_info = {}
 
 # calculate points / make new spreadsheet per team in play-ins for their score
-for filename in os.listdir('data/playins_team_data'): # relative path
+for filename in os.listdir('data/03_playins_team_data'): # relative path
     if filename.endswith('.csv'):
 
         # create new csv file in /data/playins_team_data/{filename}
         new_filename = filename.split('.')[0] + "_pts.csv"
 
-        with open(f'data/playins_team_score/{new_filename}', 'w') as f:
+        with open(f'data/04_playins_team_score/{new_filename}', 'w') as f:
             # write the header
             f.write("gameid,league,split,playoffs,series_num,game_num,ego_team,opp_team,gamelength,top_player,top_champion,top_primary_kills,top_primary_kill_pts,top_primary_deaths,top_primary_death_pts,top_primary_assists,top_primary_assists_pts,top_primary_total_cs,top_primary_total_cs_pts,jgl_player,jgl_champion,jgl_primary_kills,jgl_primary_kills_pts,jgl_primary_deaths,jgl_primary_deaths_pts,jgl_primary_assists,jgl_primary_assists_pts,jgl_primary_total_cs,jgl_primary_total_cs_pts,mid_player,mid_champion,mid_primary_kills,mid_primary_kills_pts,mid_primary_deaths,mid_primary_deaths_pts,mid_primary_assists,mid_primary_assists_pts,mid_primary_total_cs,mid_primary_total_cs_pts,bot_player,bot_champion,bot_primary_kills,bot_primary_kills_pts,bot_primary_deaths,bot_primary_deaths_pts,bot_primary_assists,bot_primary_assists_pts,bot_primary_total_cs,bot_primary_total_cs_pts,sup_player,sup_champion,sup_primary_kills,sup_primary_kills_pts,sup_primary_deaths,sup_primary_deaths_pts,sup_primary_assists,sup_primary_assists_pts,sup_primary_total_cs,sup_primary_total_cs_pts,constant_turrets,constant_turrets_pts,constant_dragons,constant_dragons_pts,constant_heralds,constant_heralds_pts,constant_barons,constant_barons_pts,constant_win,constant_win_pts,constant_win_under_30,constant_win_under_30_pts,constant_first_blood,constant_first_blood_pts,top_kda_pts,jgl_kda_pts,mid_kda_pts,bot_kda_pts,sup_kda_pts,tdfbh_pts,top_total_pts,jgl_total_pts,mid_total_pts,bot_total_pts,sup_total_pts\n")
 
-            df = pd.read_csv(f'data/playins_team_data/{filename}') # read the csv file
+            df = pd.read_csv(f'data/03_playins_team_data/{filename}') # read the csv file
 
             # extract match info in each gameid in the dataframe
             # for each row in the dataframe
@@ -430,9 +472,47 @@ print("Done!")
 team_csv_files = {}
 for team in important_teams:
     team_csv_files[team] = []
-    for filename in os.listdir('data/playins_team_score'):
+    for filename in os.listdir('data/04_playins_team_score'):
         if filename.startswith(f"{team}_"):
             team_csv_files[team].append(filename)
+
+def alpha_to_num(s):
+    result = 0
+    for char in s:
+        result = result * 26 + (ord(char) - ord('A') + 1)
+    return result
+
+# for each team in team_csv_files, get a df of each csv file and combine all the dfs into one df for a team
+team_combined_df_files = {}
+for team in important_teams:
+    team_combined_df_files[team] = []
+    for csv_file in team_csv_files[team]:
+        df = pd.read_csv(f'data/04_playins_team_score/{csv_file}')
+        team_combined_df_files[team].append(df)
+    
+    temp_df = pd.concat(team_combined_df_files[team]) # combine all the dfs into one df    
+
+    # team_combined_df_files[team] = temp_df.sort_values(by=['gameid']) # .reset_index(drop=True)
+    # team_combined_df_files[team] = temp_df.assign(gameid_numeric=temp_df['gameid'].str.extract(r'(\d+)$').astype(int)).sort_values(by='gameid_numeric').drop(columns='gameid_numeric')
+    # team_combined_df_files[team] = temp_df.assign(
+    #     prefix=temp_df['gameid'].str.split('_').str[0],
+    #     gameid_numeric=temp_df['gameid'].str.split('_').str[1].astype(int)
+    # ).sort_values(by=['prefix', 'gameid_numeric']).drop(columns=['prefix', 'gameid_numeric'])
+    team_combined_df_files[team] = temp_df.assign(
+        series_num_numeric=temp_df['series_num'].apply(alpha_to_num),  # Convert series_num to a sortable numeric value
+        game_num_numeric=temp_df['game_num'].astype(int)  # Convert game_num from string to int
+    ).sort_values(by=['series_num_numeric', 'game_num_numeric'])  # Sort by the new numeric columns
+    
+    team_combined_df_files[team] = team_combined_df_files[team].drop(columns=['series_num_numeric', 'game_num_numeric']) # drop the numeric columns
+
+# create a csv file for each team df in team_combined_df_files and store in /data/04_playins_team_score_combined
+for team in important_teams:
+    team_combined_df_files[team].to_csv(f'data/05_playins_team_score_combined/{team}_combined.csv', index=False)
+
+# for each team in team_combined_df_files, find the player who carries the most games
+player_most_games = {}
+
+
                             
                 
                             

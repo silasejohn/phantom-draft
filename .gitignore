@@ -1,7 +1,8 @@
 .DS_Store
 .env
 league-env/*
-data/2024*
+*.csv
+data/*.csv
 data/league_data/*
 data/team_data/*
 data/playins_team_data/*
