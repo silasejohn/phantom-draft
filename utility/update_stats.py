@@ -9,7 +9,8 @@ import sys
 UNIQ_LEAGUE_NAMES = [] 
 
 # LIST of directory paths to clean
-DIRECTORY_PATHS = ['data/01_league_data/', 'data/02_team_data/', 'data/03_playins_team_data/', 'data/04_playins_team_score/', 'data/05_playins_team_score_combined/']
+DIRECTORY_PATHS = ['data/01_league_data/', 'data/02_league_team_split_playoffs_data/', 'data/03_data_trimmed_02_league_team_split_playoffs_data/', 'data/04_playins_team_data/', 'data/05_playins_team_score/', 'data/06_playins_team_score_combined/']
+NECESSARY_HEADERS = ['gameid', 'league', 'split', 'playoffs', 'game', 'series_num', 'participantid', 'position', 'playername', 'teamname', 'champion', 'gamelength', 'result', 'kills', 'assists', 'deaths', 'firstblood', 'dragons', 'heralds', 'barons', 'towers', 'total cs']
 
 # DICTIONARY of (keys) league (values) [ dictionary of (keys) team names (values) list of splits ]
 UNIQ_LEAGUE_TEAM_SPLITS = {} 
@@ -134,7 +135,7 @@ for team in SWISS_TEAM_LEAGUES: # iterate through all SWISS_TEAMS
                 # determine team_id by index 
                 team_id = SWISS_TEAM_ID[SWISS_TEAMS.index(team)]
                 non_playoff_filename = f"{league}_{team_id}_{split}.csv"
-                non_playoff_df.to_csv(f"data/02_team_data/{non_playoff_filename}", index=False)
+                non_playoff_df.to_csv(f"data/02_league_team_split_playoffs_data/{non_playoff_filename}", index=False)
 
             # export to csv for playoff games
             if not playoff_df.empty:
@@ -164,13 +165,27 @@ for team in SWISS_TEAM_LEAGUES: # iterate through all SWISS_TEAMS
 
                 team_id = SWISS_TEAM_ID[SWISS_TEAMS.index(team)]
                 playoff_filename = f"{league}_{team_id}_{split}_Playoffs.csv"
-                playoff_df.to_csv(f"data/02_team_data/{playoff_filename}", index=False)
-
-sys.exit()
+                playoff_df.to_csv(f"data/02_league_team_split_playoffs_data/{playoff_filename}", index=False)
 
 #########################################
 ### [3] Data Trimmed CSVs for Fantasy ###
 #########################################
+
+# go through every csv in /data/02_league_team_split_playoffs_data folder and create a new csv file in /data/03_data_trimmed_02_league_team_split_playoffs_data folder
+for filename in os.listdir('data/02_league_team_split_playoffs_data'): # relative path
+
+    # if the file is a csv file
+    if filename.endswith('.csv'):
+        # keep only the columns that are needed for fantasy
+        df = pd.read_csv(f'data/02_league_team_split_playoffs_data/{filename}')
+        df = df[NECESSARY_HEADERS]
+        df.to_csv(f'data/03_data_trimmed_02_league_team_split_playoffs_data/{filename}', index=False)
+
+sys.exit()
+
+###################################
+### [4] Player-Specific Data??? ###
+###################################
 
 # create an team_info.txt file in data/team_data with the teamname and players on the team
 with open('info/playins_teams.txt', 'w') as f:
@@ -198,9 +213,9 @@ with open('info/playins_teams.txt', 'w') as f:
 
 # for every csv in /data/team_data folder, find total number of unique gameids per csv and print
 output = []
-for filename in os.listdir('data/02_team_data'): # relative path
+for filename in os.listdir('data/02_league_team_split_playoffs_data'): # relative path
     if filename.endswith('.csv'):
-        df = pd.read_csv(f'data/02_team_data/{filename}')
+        df = pd.read_csv(f'data/02_league_team_split_playoffs_data/{filename}')
         unique_gameids = df['gameid'].nunique() # find unique gameids
 
         # store all unique gameids in a list
@@ -237,16 +252,16 @@ with open('info/playins_history.txt', 'w') as f:
     f.write("\n")
 
 # calculate points / make new spreadsheet per team in play-ins
-for filename in os.listdir('data/02_team_data'): # relative path
+for filename in os.listdir('data/02_league_team_split_playoffs_data'): # relative path
     if filename.endswith('.csv'):
 
         # create new csv file in /data/playins_team_data/{filename}
         new_filename = filename.split('.')[0] + ".csv"
-        with open(f'data/03_playins_team_data/{new_filename}', 'w') as f:
+        with open(f'data/04_playins_team_data/{new_filename}', 'w') as f:
             # write the header
             f.write("gameid,league,split,playoffs,series_num,game_num,ego_team,opp_team,gamelength,top_player,top_champion,top_primary_kills,top_primary_deaths,top_primary_assists,top_primary_total_cs,jgl_player,jgl_champion,jgl_primary_kills,jgl_primary_deaths,jgl_primary_assists,jgl_primary_total_cs,mid_player,mid_champion,mid_primary_kills,mid_primary_deaths,mid_primary_assists,mid_primary_total_cs,bot_player,bot_champion,bot_primary_kills,bot_primary_deaths,bot_primary_assists,bot_primary_total_cs,sup_player,sup_champion,sup_primary_kills,sup_primary_deaths,sup_primary_assists,sup_primary_total_cs,constant_turrets,constant_dragons,constant_heralds,constant_barons,constant_win,constant_win_under_30,constant_first_blood\n")
 
-            df = pd.read_csv(f'data/02_team_data/{filename}')
+            df = pd.read_csv(f'data/02_league_team_split_playoffs_data/{filename}')
             team_name = filename.split('_')[0]
 
             total_games = df['gameid'].nunique()
@@ -426,7 +441,7 @@ with open('info/static_vals.json') as json_file:
 match_pts_info = {}
 
 # calculate points / make new spreadsheet per team in play-ins for their score
-for filename in os.listdir('data/03_playins_team_data'): # relative path
+for filename in os.listdir('data/04_playins_team_data'): # relative path
     if filename.endswith('.csv'):
 
         # create new csv file in /data/playins_team_data/{filename}
@@ -436,7 +451,7 @@ for filename in os.listdir('data/03_playins_team_data'): # relative path
             # write the header
             f.write("gameid,league,split,playoffs,series_num,game_num,ego_team,opp_team,gamelength,top_player,top_champion,top_primary_kills,top_primary_kill_pts,top_primary_deaths,top_primary_death_pts,top_primary_assists,top_primary_assists_pts,top_primary_total_cs,top_primary_total_cs_pts,jgl_player,jgl_champion,jgl_primary_kills,jgl_primary_kills_pts,jgl_primary_deaths,jgl_primary_deaths_pts,jgl_primary_assists,jgl_primary_assists_pts,jgl_primary_total_cs,jgl_primary_total_cs_pts,mid_player,mid_champion,mid_primary_kills,mid_primary_kills_pts,mid_primary_deaths,mid_primary_deaths_pts,mid_primary_assists,mid_primary_assists_pts,mid_primary_total_cs,mid_primary_total_cs_pts,bot_player,bot_champion,bot_primary_kills,bot_primary_kills_pts,bot_primary_deaths,bot_primary_deaths_pts,bot_primary_assists,bot_primary_assists_pts,bot_primary_total_cs,bot_primary_total_cs_pts,sup_player,sup_champion,sup_primary_kills,sup_primary_kills_pts,sup_primary_deaths,sup_primary_deaths_pts,sup_primary_assists,sup_primary_assists_pts,sup_primary_total_cs,sup_primary_total_cs_pts,constant_turrets,constant_turrets_pts,constant_dragons,constant_dragons_pts,constant_heralds,constant_heralds_pts,constant_barons,constant_barons_pts,constant_win,constant_win_pts,constant_win_under_30,constant_win_under_30_pts,constant_first_blood,constant_first_blood_pts,top_kda_pts,jgl_kda_pts,mid_kda_pts,bot_kda_pts,sup_kda_pts,tdfbh_pts,top_total_pts,jgl_total_pts,mid_total_pts,bot_total_pts,sup_total_pts\n")
 
-            df = pd.read_csv(f'data/03_playins_team_data/{filename}') # read the csv file
+            df = pd.read_csv(f'data/04_playins_team_data/{filename}') # read the csv file
 
             # extract match info in each gameid in the dataframe
             # for each row in the dataframe
