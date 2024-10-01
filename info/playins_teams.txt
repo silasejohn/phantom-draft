@@ -1,5 +1,5 @@
 [PSG Talon]
-Leagues: ['PCS' 'MSI']
+Leagues: ['PCS' 'MSI' 'WLDs']
 Splits: ['Spring' nan 'Summer']
 
 Azhi-top
@@ -10,8 +10,8 @@ Woody-sup
 
 
 [Fukuoka SoftBank HAWKS gaming]
-Leagues: ['LJL' 'PCS']
-Splits: ['Spring' 'Summer']
+Leagues: ['LJL' 'PCS' 'WLDs']
+Splits: ['Spring' 'Summer' nan]
 
 Evi-top
 Forest-jng
@@ -21,8 +21,8 @@ Vsta-sup
 
 
 [Vikings Esports]
-Leagues: ['VCS']
-Splits: ['Spring' 'Summer']
+Leagues: ['VCS' 'WLDs']
+Splits: ['Spring' 'Summer' nan]
 
 Nanaue-top
 Gury-jng
@@ -32,7 +32,7 @@ Bie-sup
 
 
 [GAM Esports]
-Leagues: ['VCS' 'MSI']
+Leagues: ['VCS' 'MSI' 'WLDs']
 Splits: ['Spring' nan 'Summer']
 
 Kiaya-top
@@ -43,8 +43,8 @@ Elio-sup
 
 
 [100 Thieves]
-Leagues: ['LCS']
-Splits: ['Spring' 'Summer']
+Leagues: ['LCS' 'WLDs']
+Splits: ['Spring' 'Summer' nan]
 
 Sniper-top
 River-jng
@@ -54,8 +54,8 @@ Eyla-sup
 
 
 [MAD Lions KOI]
-Leagues: ['LEC']
-Splits: ['Winter' 'Spring' 'Summer' 'Finals']
+Leagues: ['LEC' 'WLDs']
+Splits: ['Winter' 'Spring' 'Summer' 'Finals' nan]
 
 Myrwn-top
 Elyoya-jng
@@ -65,8 +65,8 @@ Alvaro-sup
 
 
 [paiN Gaming]
-Leagues: ['CBLOL']
-Splits: ['Split 1' 'Split 2']
+Leagues: ['CBLOL' 'WLDs']
+Splits: ['Split 1' 'Split 2' nan]
 
 Wizer-top
 CarioK-jng
@@ -76,8 +76,8 @@ Kuri-sup
 
 
 [Movistar R7]
-Leagues: ['LLA']
-Splits: ['Opening' 'Closing']
+Leagues: ['LLA' 'WLDs']
+Splits: ['Opening' 'Closing' nan]
 
 Summit-top
 Oddie-jng

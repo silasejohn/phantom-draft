@@ -5,99 +5,176 @@ import json
 import os
 import sys
 
-# Create a multi-league dataframe
-multi_league_df = create_multi_league_df()
+# LIST of unique league names
+UNIQ_LEAGUE_NAMES = [] 
 
-# Create a single league dataframe for each league 
-# and export to a csv file in the data/league_data folder
-leagues = multi_league_df['league'].unique()
-for league in leagues:
-    league_df = create_single_league_df(multi_league_df, league)
-    export_df_to_csv(league_df, f'data/01_league_data/{league}_league.csv')
+# LIST of directory paths to clean
+DIRECTORY_PATHS = ['data/01_league_data/', 'data/02_team_data/', 'data/03_playins_team_data/', 'data/04_playins_team_score/', 'data/05_playins_team_score_combined/']
 
-important_teams = ['PSG Talon', 'Fukuoka SoftBank HAWKS gaming', 'Vikings Esports', 'GAM Esports', '100 Thieves', 'MAD Lions KOI', 'paiN Gaming', 'Movistar R7']
-# create a dictionary with team names as keys and leagues as values
-team_leagues = {}
-team_splits = {}
+# DICTIONARY of (keys) league (values) [ dictionary of (keys) team names (values) list of splits ]
+UNIQ_LEAGUE_TEAM_SPLITS = {} 
 
-# add keys to the dictionary with values of a empty list
-for team in important_teams:
-    team_leagues[team] = find_leagues_given_team(multi_league_df, team)
-    # print(f"{team} has participated in the following leagues: {team_leagues[team]}")
-    team_splits[team] = find_splits_given_team(multi_league_df, team)
-    # print(f"{team} has participated in the following splits: {team_splits[team]}")
+# LIST of play_ins_teams
+PLAY_INS_TEAMS = ['PSG Talon', 'Fukuoka SoftBank HAWKS gaming', 'Vikings Esports', 'GAM Esports', '100 Thieves', 'MAD Lions KOI', 'paiN Gaming', 'Movistar R7']
 
-# for every team and each split they have been in, create a dataframe, export to csv and store in /data/team_data
-for team in important_teams:
-    series_num = "~" # initialize series_num to "~"
-    for split in team_splits[team]:
-        if pd.isna(split):
-            continue # skip if split is NaN
+# LIST of swiss_teams / leagues
+SWISS_LEAGUES = ['LCS', 'LEC', 'LCK', 'LPL', 'WLDs']
+SWISS_TEAMS = ['Weibo Gaming', 'LNG Esports', 'Top Esports', 'Bilibili Gaming', # LPL
+               'T1', 'Dplus KIA', 'Gen.G', 'Hanwha Life Esports',               # LCK
+               'FlyQuest', 'Fnatic', 'Team Liquid', 'G2 Esports',               # LCS / LEC
+               'MAD Lions KOI', 'paiN Gaming', 'PSG Talon', 'GAM Esports']      # WLDs (Play-Ins)
+SWISS_TEAM_ID = ['WBG', 'LNG', 'TES', 'BLG', 
+                 'T1', 'DK', 'GEN', 'HLE', 
+                 'FLY', 'FNC', 'TL', 'G2', 
+                 'MAD', 'PNG', 'PSG', 'GAM']
+SWISS_TEAM_LEAGUES = {} # dictionary with (keys) team names (values) list of leagues
 
-        # create a dataframe for a single team per split per playoffs from the multi-league dataframe
-        non_playoff_df, playoff_df = create_single_split_team_df(multi_league_df, team, split)
-        
-        # export to csv for non-playoff games
-        if not non_playoff_df.empty: 
-            
-            unique_gameids = non_playoff_df['gameid'].unique() # find unique gameids
-            non_playoff_df.insert(4, 'series_num', series_num) # add series_num to the dataframe before "game_num" header
-            
-            for gameid in unique_gameids:
-                game_df = non_playoff_df[non_playoff_df['gameid'] == gameid] # all rows with the same gameid
+# Clean Directories Function
+# Purpose: Deletes all CSV files from specified directories
+def clean_directories(directory_paths):
+    for directory in directory_paths:
+        for filename in os.listdir(directory):
+            if filename.endswith('.csv'):
+                os.remove(f'{directory}/{filename}')
 
-                # if game is "1", increment series_num by 1 Letter 
-                # if series_num is "Z", increment series_num to "A"
-                if game_df['game'].values[0] == 1:
-                    if series_num == "~":
-                        series_num = "A"
-                    elif series_num == "Z":
-                        series_num = "AA"
-                    else:
-                        # get the last char of the series_num (even if there are multiple chars) and increment by one char
-                        series_num = series_num[:-1] + chr(ord(series_num[-1]) + 1)
-                
-                # for all rows with the same gameid, update the series_num
-                non_playoff_df.loc[non_playoff_df['gameid'] == gameid, 'series_num'] = series_num
-
-            non_playoff_filename = f"{team}_{split}.csv"
-            non_playoff_df.to_csv(f"data/02_team_data/{non_playoff_filename}", index=False)
-
-        # export to csv for playoff games
-        if not playoff_df.empty:
-
-            unique_gameids = playoff_df['gameid'].unique() # find unique gameids
-            playoff_df.insert(4, 'series_num', series_num) # add series_num to the dataframe before "game_num" header
-
-            for gameid in unique_gameids:
-                game_df = playoff_df[playoff_df['gameid'] == gameid] # all rows with the same gameid
-
-                # if game is "1", increment series_num by 1 Letter 
-                # if series_num is "Z", increment series_num to "A"
-                if game_df['game'].values[0] == 1:
-                    if series_num == "~":
-                        series_num = "A"
-                    elif series_num == "Z":
-                        series_num = "AA"
-                    else:
-                        # get the last char of the series_num (even if there are multiple chars) and increment by one char
-                        series_num = series_num[:-1] + chr(ord(series_num[-1]) + 1)
-                        
-                # for all rows with the same gameid, update the series_num
-                playoff_df.loc[playoff_df['gameid'] == gameid, 'series_num'] = series_num
-
-            playoff_filename = f"{team}_{split}_Playoffs.csv"
-            playoff_df.to_csv(f"data/02_team_data/{playoff_filename}", index=False)
-
+# Custom Role Sorting Funciton
+# Purpose: Sorts the roles in the order of 'top', 'jng', 'mid', 'bot', 'sup'
 def custom_role_sort_key(item):
     priority_list = ['top', 'jng', 'mid', 'bot', 'sup']
     pos = item.split('-')[1]
     # print("Item:", item, " - Position:", pos, " - Index:", priority_list.index(pos) if pos in priority_list else len(priority_list))
     return priority_list.index(pos) if pos in priority_list else len(priority_list)
 
+##################################################################################################################
+# clean_directories(DIRECTORY_PATHS) 
+# sys.exit()
+##################################################################################################################
+
+##############################################
+### [0] Create Multi-League Data DataFrame ###
+##############################################
+multi_league_df = create_multi_league_df()
+
+######################################################
+### [1] Export CSVs for League-Specific DataFrames ###
+######################################################
+
+# identify unique league names
+leagues = multi_league_df['league'].unique()
+UNIQ_LEAGUE_NAMES = leagues # store in global variable
+
+# identify unique team names by region 
+for league in UNIQ_LEAGUE_NAMES:
+    unique_teams = multi_league_df[multi_league_df['league'] == league]['teamname'].unique()
+    # create a dictionary with teamnames as keys and splits as values
+    UNIQ_LEAGUE_TEAM_SPLITS[league] = {}
+    for team in unique_teams:
+        splits = multi_league_df[(multi_league_df['league'] == league) & (multi_league_df['teamname'] == team)]['split'].unique()
+        UNIQ_LEAGUE_TEAM_SPLITS[league][team] = splits
+
+# iterate through leagues
+for league in SWISS_LEAGUES:
+    league_df = create_single_league_df(multi_league_df, league)
+    export_df_to_csv(league_df, f'data/01_league_data/{league}_league.csv')
+
+###############################################################
+### [2] Export CSVs for {League}{Team}{Split}{Playoffs} DFs ###
+###############################################################
+
+# find leagues each SWISS_TEAM has been in
+for team in SWISS_TEAMS:
+    SWISS_TEAM_LEAGUES[team] = find_leagues_given_team(multi_league_df, team)
+
+for team in SWISS_TEAM_LEAGUES: # iterate through all SWISS_TEAMS
+    for league in SWISS_TEAM_LEAGUES[team]: # iterate through all leagues for each SWISS_TEAM
+        
+        # skip if league is not in SWISS_LEAGUES
+        if league not in SWISS_LEAGUES:
+            continue
+        
+        # initialize series_num to "~" 
+        series_num = "~"
+
+        for split in UNIQ_LEAGUE_TEAM_SPLITS[league][team]: # iterate through all splits for each SWISS_TEAM in each league
+
+            # sanity check for NaN values
+            if pd.isna(split):
+                continue
+
+            # create a dataframe for a single team per league per split per playoffs from the multi-league dataframe
+            non_playoff_df, playoff_df = create_single_split_team_df(multi_league_df, team, split, league)
+
+            # export to csv for non-playoff games
+            if not non_playoff_df.empty:
+                
+                # logic to determine series_num for each game - find unique gameids
+                unique_gameids = non_playoff_df['gameid'].unique() 
+
+                 # add series_num to the dataframe before "game_num" header
+                non_playoff_df.insert(4, 'series_num', series_num)
+                
+                # iterate through all unique gameids
+                for gameid in unique_gameids:
+                    game_df = non_playoff_df[non_playoff_df['gameid'] == gameid] # all rows with the same gameid
+
+                    # if game is "1", increment series_num by 1 Letter 
+                    # if series_num is "Z", increment series_num to "A"
+                    if game_df['game'].values[0] == 1:
+                        if series_num == "~":
+                            series_num = "A"
+                        elif series_num == "Z":
+                            series_num = "AA"
+                        else:
+                            # get the last char of the series_num (even if there are multiple chars) and increment by one char
+                            series_num = series_num[:-1] + chr(ord(series_num[-1]) + 1)
+                    
+                    # for all rows with the same gameid, update the series_num
+                    non_playoff_df.loc[non_playoff_df['gameid'] == gameid, 'series_num'] = series_num
+
+                # determine team_id by index 
+                team_id = SWISS_TEAM_ID[SWISS_TEAMS.index(team)]
+                non_playoff_filename = f"{league}_{team_id}_{split}.csv"
+                non_playoff_df.to_csv(f"data/02_team_data/{non_playoff_filename}", index=False)
+
+            # export to csv for playoff games
+            if not playoff_df.empty:
+                # logic to determine series_num for each game - find unique gameids
+                unique_gameids = playoff_df['gameid'].unique() 
+
+                # add series_num to the dataframe before "game_num" header
+                playoff_df.insert(4, 'series_num', series_num) 
+
+                # iterate through all unique gameids
+                for gameid in unique_gameids:
+                    game_df = playoff_df[playoff_df['gameid'] == gameid] # all rows with the same gameid
+
+                    # if game is "1", increment series_num by 1 Letter 
+                    # if series_num is "Z", increment series_num to "A"
+                    if game_df['game'].values[0] == 1:
+                        if series_num == "~":
+                            series_num = "A"
+                        elif series_num == "Z":
+                            series_num = "AA"
+                        else:
+                            # get the last char of the series_num (even if there are multiple chars) and increment by one char
+                            series_num = series_num[:-1] + chr(ord(series_num[-1]) + 1)
+                            
+                    # for all rows with the same gameid, update the series_num
+                    playoff_df.loc[playoff_df['gameid'] == gameid, 'series_num'] = series_num
+
+                team_id = SWISS_TEAM_ID[SWISS_TEAMS.index(team)]
+                playoff_filename = f"{league}_{team_id}_{split}_Playoffs.csv"
+                playoff_df.to_csv(f"data/02_team_data/{playoff_filename}", index=False)
+
+sys.exit()
+
+#########################################
+### [3] Data Trimmed CSVs for Fantasy ###
+#########################################
+
 # create an team_info.txt file in data/team_data with the teamname and players on the team
 with open('info/playins_teams.txt', 'w') as f:
-    for team in important_teams:
+    for team in PLAY_INS_TEAMS:
 
         # find unique players and positions for a team
         player_and_positions = find_unique_players_and_positions_given_team(multi_league_df, team)
@@ -463,9 +540,9 @@ for filename in os.listdir('data/03_playins_team_data'): # relative path
                 f.write(f"{gameid},{league},{split},{playoffs},{series_num},{game_num},{ego_team},{opp_team},{gamelength},{top_player},{top_champion},{top_primary_kills},{top_primary_kill_pts},{top_primary_deaths},{top_primary_death_pts},{top_primary_assists},{top_primary_assists_pts},{top_primary_total_cs},{top_primary_total_cs_pts},{jgl_player},{jgl_champion},{jgl_primary_kills},{jgl_primary_kills_pts},{jgl_primary_deaths},{jgl_primary_death_pts},{jgl_primary_assists},{jgl_primary_assists_pts},{jgl_primary_total_cs},{jgl_primary_total_cs_pts},{mid_player},{mid_champion},{mid_primary_kills},{mid_primary_kills_pts},{mid_primary_deaths},{mid_primary_death_pts},{mid_primary_assists},{mid_primary_assists_pts},{mid_primary_total_cs},{mid_primary_total_cs_pts},{bot_player},{bot_champion},{bot_primary_kills},{bot_primary_kills_pts},{bot_primary_deaths},{bot_primary_death_pts},{bot_primary_assists},{bot_primary_assists_pts},{bot_primary_total_cs},{bot_primary_total_cs_pts},{sup_player},{sup_champion},{sup_primary_kills},{sup_primary_kills_pts},{sup_primary_deaths},{sup_primary_death_pts},{sup_primary_assists},{sup_primary_assists_pts},{sup_primary_total_cs},{sup_primary_total_cs_pts},{constant_turrets},{constant_turrets_pts},{constant_dragons},{constant_dragons_pts},{constant_heralds},{constant_heralds_pts},{constant_barons},{constant_barons_pts},{constant_win},{constant_win_pts},{constant_win_under_30},{constant_win_under_30_pts},{constant_first_blood},{constant_first_blood_pts},{top_kda_pts},{jgl_kda_pts},{mid_kda_pts},{bot_kda_pts},{sup_kda_pts},{constant_tdfbh_pts},{top_total_pts},{jgl_total_pts},{mid_total_pts},{bot_total_pts},{sup_total_pts}\n")
 print("Done!")
 
-# for each team in important_teams, find all the respective csv files in /data/playins_team_score and store in a list
+# for each team in PLAY_INS_TEAMS, find all the respective csv files in /data/playins_team_score and store in a list
 team_csv_files = {}
-for team in important_teams:
+for team in PLAY_INS_TEAMS:
     team_csv_files[team] = []
     for filename in os.listdir('data/04_playins_team_score'):
         if filename.startswith(f"{team}_"):
@@ -479,7 +556,7 @@ def alpha_to_num(s):
 
 # for each team in team_csv_files, get a df of each csv file and combine all the dfs into one df for a team
 team_combined_df_files = {}
-for team in important_teams:
+for team in PLAY_INS_TEAMS:
     team_combined_df_files[team] = []
     for csv_file in team_csv_files[team]:
         df = pd.read_csv(f'data/04_playins_team_score/{csv_file}')
@@ -494,7 +571,7 @@ for team in important_teams:
     team_combined_df_files[team] = team_combined_df_files[team].drop(columns=['series_num_numeric', 'game_num_numeric']) # drop the numeric columns
 
 # create a csv file for each team df in team_combined_df_files and store in /data/04_playins_team_score_combined
-for team in important_teams:
+for team in PLAY_INS_TEAMS:
     team_combined_df_files[team].to_csv(f'data/05_playins_team_score_combined/{team}_combined.csv', index=False)
 
 ### OVERALL STATS
@@ -508,7 +585,7 @@ player_point_combos = {}
 player_carry_potential = {}
 
 # start by every game for a team, store a list ranking tuple of playername and their respective points for that game
-for team in important_teams:
+for team in PLAY_INS_TEAMS:
     # store a list of tuples of playername and their respective points for that game
     player_point_combos[team] = []
 
@@ -552,22 +629,26 @@ for team in important_teams:
 
 # print player_carry_potential 
 player_standardized_carry_potential = {}
-for team in important_teams:
+for team in PLAY_INS_TEAMS:
     player_standardized_carry_potential[team] = []
     print(f"[{team}]")
     for player in player_carry_potential[team]:
         # print player standardized score / # of games played
-        print(f"{player}: {(player_carry_potential[team][player]['standardized_score'] / player_carry_potential[team][player]['games_played'])}")
-        player_standardized_carry_potential[team].append((player, (player_carry_potential[team][player]['standardized_score'] / player_carry_potential[team][player]['games_played'])))
+        standardized_metric = round(player_carry_potential[team][player]['standardized_score'] / player_carry_potential[team][player]['games_played'], 4)
+        print(f"{player}: {standardized_metric}")
+        player_standardized_carry_potential[team].append((player, standardized_metric))
+
+    # sort the list in decreasing standardized score order
+    player_standardized_carry_potential[team].sort(key=lambda x: x[1], reverse=True)
+
     print()
 
 # store the player who has highest standardized carry potential + associated # of games played in a txt file called /info/player_most_games.txt
 with open('info/player_carry_potential.txt', 'w') as f:
-    for team in important_teams:
+    for team in PLAY_INS_TEAMS:
         f.write(f"[{team}]\n")
         for player, standardized_score in player_standardized_carry_potential[team]:
-            f.write(f"{player}: {standardized_score}\n") # write player and standardized score
-            f.write(f"Games Played: {player_carry_potential[team][player]['games_played']}\n") # write number of games played for player 
+            f.write(f"{player}: {standardized_score} ... Games ({round(player_carry_potential[team][player]['games_played'], 4)})\n") # write number of games played for player 
         f.write("\n")
 
 # lowest_points = player_most_games[team][-1][1] ... 0.51
