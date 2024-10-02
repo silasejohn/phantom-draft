@@ -1,8 +1,10 @@
 from league_stats import create_multi_league_df, create_single_league_df, export_df_to_csv, create_single_split_team_df
 from team_stats import find_leagues_given_team, find_splits_given_team, find_unique_players_and_positions_given_team
 import pandas as pd
+import numpy as np
 import json
 import os
+import shutil
 import sys
 
 # LIST of unique league names
@@ -11,6 +13,8 @@ UNIQ_LEAGUE_NAMES = []
 # LIST of directory paths to clean
 DIRECTORY_PATHS = ['data/01_league_data/', 'data/02_league_team_split_playoffs_data/', 'data/03_data_trimmed_02_league_team_split_playoffs_data/', 'data/04_playins_team_data/', 'data/05_playins_team_score/', 'data/06_playins_team_score_combined/']
 NECESSARY_HEADERS = ['gameid', 'league', 'split', 'playoffs', 'game', 'series_num', 'participantid', 'position', 'playername', 'teamname', 'champion', 'gamelength', 'result', 'kills', 'assists', 'deaths', 'firstblood', 'dragons', 'heralds', 'barons', 'towers', 'total cs']
+PLAYINS_EXCLUDE_PLAYERS = ['Fireblade-top', 'Kratos-top', 'Tomrio-jng', 'SofM-sup', 'Kairi-sup', 'Blazes-mid', 'Pyshiro-bot', 'Neo-bot', 'Meech-bot', 'Keine-top', 'Summit-jng', 'Daiky-jng', 'Lava-mid', 'Ceo-mid', 'Lyonz-bot', 'Oddie-sup']
+SWISS_EXCLUDE_PLAYERS = ['Zdz-top', 'Youdang-jng', 'Xiaohao-jng', 'XBear-sup', 'Mark-sup', 'Xun-jng', 'Guwon-jng', 'Kellin-sup', 'Jensen-mid', 'Blazes-mid', 'Neo-bot', 'Pyshiro-bot']
 
 # DICTIONARY of (keys) league (values) [ dictionary of (keys) team names (values) list of splits ]
 UNIQ_LEAGUE_TEAM_SPLITS = {} 
@@ -19,7 +23,7 @@ UNIQ_LEAGUE_TEAM_SPLITS = {}
 PLAY_INS_TEAMS = ['PSG Talon', 'Fukuoka SoftBank HAWKS gaming', 'Vikings Esports', 'GAM Esports', '100 Thieves', 'MAD Lions KOI', 'paiN Gaming', 'Movistar R7']
 
 # LIST of swiss_teams / leagues
-SWISS_LEAGUES = ['LCS', 'LEC', 'LCK', 'LPL', 'WLDs']
+SWISS_LEAGUES = ['LCS', 'LEC', 'LCK', 'LPL', 'WLDs', 'EWC', 'MSI']
 SWISS_TEAMS = ['Weibo Gaming', 'LNG Esports', 'Top Esports', 'Bilibili Gaming', # LPL
                'T1', 'Dplus KIA', 'Gen.G', 'Hanwha Life Esports',               # LCK
                'FlyQuest', 'Fnatic', 'Team Liquid', 'G2 Esports',               # LCS / LEC
@@ -35,8 +39,23 @@ SWISS_TEAM_LEAGUES = {} # dictionary with (keys) team names (values) list of lea
 def clean_directories(directory_paths):
     for directory in directory_paths:
         for filename in os.listdir(directory):
+            
+            # file path to delete
+            file_path = os.path.join(directory, filename)
+            
+            # delete the file if it is a csv file
             if filename.endswith('.csv'):
-                os.remove(f'{directory}/{filename}')
+                os.remove(file_path)
+
+            # delete the directory if it is a folder
+            elif os.path.isdir(file_path):
+                shutil.rmtree(file_path)
+
+# Check & Create Directory (if not exist)
+# Check and create directory if it doesn't exist
+def ensure_directory_exists(directory_path):
+    if not os.path.exists(directory_path):
+        os.makedirs(directory_path)
 
 # Custom Role Sorting Funciton
 # Purpose: Sorts the roles in the order of 'top', 'jng', 'mid', 'bot', 'sup'
@@ -55,6 +74,22 @@ def custom_role_sort_key(item):
 ### [0] Create Multi-League Data DataFrame ###
 ##############################################
 multi_league_df = create_multi_league_df()
+
+# add a split value of "LPL_WLDs" to every game before 2024-09-03
+# add a split value of "LCK_WLDs" to every game before 2024-09-14
+# add a split value of "Playins" to every game after 2024-09-14
+multi_league_df.loc[(multi_league_df['league'] == "WLDs") & (multi_league_df['date'] < "2024-09-20"), 'split'] = "LCK_WLDs"
+multi_league_df.loc[(multi_league_df['league'] == "WLDs") & (multi_league_df['date'] < "2024-09-03"), 'split'] = "LPL_WLDs"
+multi_league_df.loc[(multi_league_df['league'] == "WLDs") & (multi_league_df['date'] >= "2024-09-20"), 'split'] = "Playins"
+
+# delete all leagues of 'DCup' from the multi_league_df
+multi_league_df = multi_league_df[multi_league_df['league'] != 'DCup']
+
+# add a split value of "EWC" to every row with a league of "EWC"
+multi_league_df.loc[multi_league_df['league'] == "EWC", 'split'] = "EWC"
+
+# add a split value of "MSI" to every row with a league of "MSI"
+multi_league_df.loc[multi_league_df['league'] == "MSI", 'split'] = "MSI"
 
 ######################################################
 ### [1] Export CSVs for League-Specific DataFrames ###
@@ -87,6 +122,7 @@ for team in SWISS_TEAMS:
     SWISS_TEAM_LEAGUES[team] = find_leagues_given_team(multi_league_df, team)
 
 for team in SWISS_TEAM_LEAGUES: # iterate through all SWISS_TEAMS
+
     for league in SWISS_TEAM_LEAGUES[team]: # iterate through all leagues for each SWISS_TEAM
         
         # skip if league is not in SWISS_LEAGUES
@@ -97,8 +133,10 @@ for team in SWISS_TEAM_LEAGUES: # iterate through all SWISS_TEAMS
         series_num = "~"
 
         for split in UNIQ_LEAGUE_TEAM_SPLITS[league][team]: # iterate through all splits for each SWISS_TEAM in each league
+            
+            print(f"Exporting {team} in {league} {split}...")
 
-            # sanity check for NaN values
+            # sanity check for NaN values (except WLDs)
             if pd.isna(split):
                 continue
 
@@ -166,7 +204,6 @@ for team in SWISS_TEAM_LEAGUES: # iterate through all SWISS_TEAMS
                 team_id = SWISS_TEAM_ID[SWISS_TEAMS.index(team)]
                 playoff_filename = f"{league}_{team_id}_{split}_Playoffs.csv"
                 playoff_df.to_csv(f"data/02_league_team_split_playoffs_data/{playoff_filename}", index=False)
-
 #########################################
 ### [3] Data Trimmed CSVs for Fantasy ###
 #########################################
@@ -179,17 +216,21 @@ for filename in os.listdir('data/02_league_team_split_playoffs_data'): # relativ
         # keep only the columns that are needed for fantasy
         df = pd.read_csv(f'data/02_league_team_split_playoffs_data/{filename}')
         df = df[NECESSARY_HEADERS]
-        df.to_csv(f'data/03_data_trimmed_02_league_team_split_playoffs_data/{filename}', index=False)
 
-sys.exit()
+        # extract team name from filename
+        team_id = filename.split('_')[1]
 
-###################################
-### [4] Player-Specific Data??? ###
-###################################
+        # create directory for each SWISS_TEAM
+        folder_path = f'data/03_data_trimmed_02_league_team_split_playoffs_data/{team_id}'
+        ensure_directory_exists(folder_path) # create directory if it doesn't exist
+        df.to_csv(f'{folder_path}/{filename}', index=False)
 
+##################################
+### [I1] SWISS TEAMS + PLAYERS ### 
+##################################
 # create an team_info.txt file in data/team_data with the teamname and players on the team
-with open('info/playins_teams.txt', 'w') as f:
-    for team in PLAY_INS_TEAMS:
+with open('info/swiss_teams.txt', 'w') as f:
+    for team in SWISS_TEAMS:
 
         # find unique players and positions for a team
         player_and_positions = find_unique_players_and_positions_given_team(multi_league_df, team)
@@ -202,54 +243,71 @@ with open('info/playins_teams.txt', 'w') as f:
 
         # write to file
         f.write(f"[{team}]\n")
-        f.write(f"Leagues: {team_leagues[team]}\n")
-        f.write(f"Splits: {team_splits[team]}\n")
+        f.write(f"Leagues: {SWISS_TEAM_LEAGUES[team]}\n")
+        
+        team_splits = []
+        for league in SWISS_TEAM_LEAGUES[team]:
+            for split in UNIQ_LEAGUE_TEAM_SPLITS[league][team]:
+                team_splits.append(split)
+
+        f.write(f"Splits: {team_splits}\n")
         for player_pos in sorted_unique_players_and_positions:
             # hard coded in due to specific players being in different roles at Worlds
-            if player_pos in ['Fireblade-top', 'Kratos-top', 'Tomrio-jng', 'SofM-sup', 'Kairi-sup', 'Blazes-mid', 'Pyshiro-bot', 'Neo-bot', 'Meech-bot', 'Keine-top', 'Summit-jng', 'Daiky-jng', 'Lava-mid', 'Ceo-mid', 'Lyonz-bot', 'Oddie-sup']:
+            if player_pos in SWISS_EXCLUDE_PLAYERS:
                 continue
             f.write(f"\n{player_pos}")
         f.write(f"\n\n\n")
 
+
+###########################################
+### [I2] SWISS TEAMS GAME / SERIES INFO ### 
+###########################################
 # for every csv in /data/team_data folder, find total number of unique gameids per csv and print
 output = []
 for filename in os.listdir('data/02_league_team_split_playoffs_data'): # relative path
     if filename.endswith('.csv'):
         df = pd.read_csv(f'data/02_league_team_split_playoffs_data/{filename}')
-        unique_gameids = df['gameid'].nunique() # find unique gameids
-
+        
         # store all unique gameids in a list
-        unique_gameids = df['gameid'].unique()
+        unique_gameids = df['gameid'].unique() 
+
+        # find number of unique gameids
+        num_unique_gameids = df['gameid'].nunique()
 
         # find unique gameids for when game is '1'
-        unique_series = df[df['game'] == 1]['gameid'].nunique()
+        num_unique_series = df[df['game'] == 1]['gameid'].nunique()
 
-        # split filename into 3 parts
-        # team, split, playoffs
+        # split filename by "_" ... [league, team, split, playoffs]
         filename_parts = filename.split('_')
-        if len(filename_parts) == 3: # if playoffs is in the filename
-            team = filename_parts[0]
-            split = filename_parts[1]
-            playoffs = filename_parts[2].split('.')[0]
-            output_msg = f"[{team}] [{split} {playoffs}] {unique_gameids} unique gameids ({unique_series} series)"
+       
+        if len(filename_parts) == 4: # if playoffs is in the filename
+            league = filename_parts[0]
+            team = filename_parts[1]
+            split = filename_parts[2]
+            playoffs = filename_parts[3].split('.')[0]
+            output_msg = f"[{league}] [{team}] [{split} {playoffs}] {num_unique_gameids} unique gameids ({num_unique_series} series)"
             output.append(output_msg)
-            # print(f"[{team}] [{split} {playoffs}] {unique_gameids} unique gameids")
-        elif len(filename_parts) == 2: # if playoffs is not in the filename
-            team = filename_parts[0]
-            split = filename_parts[1].split('.')[0]
-            output_msg = f"[{team}] [{split}] {unique_gameids} unique gameids ({unique_series} series)"
+        elif len(filename_parts) == 3: # if playoffs is not in the filename
+            league = filename_parts[0]
+            team = filename_parts[1]
+            split = filename_parts[2].split('.')[0]
+            output_msg = f"[{league}] [{team}] [{split}] {num_unique_gameids} unique gameids ({num_unique_series} series)"
             output.append(output_msg)
-            # print(f"[{team}] [{split}] {unique_gameids} unique gameids")
-
 
 # sort the output list alphabetically
 output.sort()
 
 # store output list in a txt file called /info/playins_history.txt
-with open('info/playins_history.txt', 'w') as f:
+with open('info/swiss_history.txt', 'w') as f:
     for item in output:
         f.write(f"{item}\n")
     f.write("\n")
+
+sys.exit()
+
+###############################################
+###                                         ###
+###############################################
 
 # calculate points / make new spreadsheet per team in play-ins
 for filename in os.listdir('data/02_league_team_split_playoffs_data'): # relative path

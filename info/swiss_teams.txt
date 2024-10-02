@@ -1,0 +1,176 @@
+[Weibo Gaming]
+Leagues: ['LPL' 'WLDs']
+Splits: ['Spring', 'Summer Placements', 'Summer', 'LPL_WLDs']
+
+Breathe-top
+Tarzan-jng
+Xiaohu-mid
+Light-bot
+Crisp-sup
+
+
+[LNG Esports]
+Leagues: ['LPL' 'WLDs']
+Splits: ['Spring', 'Summer Placements', 'Summer', 'LPL_WLDs']
+
+Zika-top
+Weiwei-jng
+Scout-mid
+GALA-bot
+Hang-sup
+
+
+[Top Esports]
+Leagues: ['LPL' 'MSI' 'EWC']
+Splits: ['Spring', 'Summer Placements', 'Summer', 'MSI', 'EWC']
+
+369-top
+Tian-jng
+Creme-mid
+JackeyLove-bot
+Meiko-sup
+
+
+[Bilibili Gaming]
+Leagues: ['LPL' 'MSI' 'EWC']
+Splits: ['Spring', 'Summer Placements', 'Summer', 'MSI', 'EWC']
+
+Bin-top
+Wei-jng
+knight-mid
+Elk-bot
+ON-sup
+
+
+[T1]
+Leagues: ['LCK' 'MSI' 'EWC' 'WLDs']
+Splits: ['Spring', 'Summer', 'MSI', 'EWC', 'LCK_WLDs']
+
+Zeus-top
+Oner-jng
+Faker-mid
+Gumayusi-bot
+Keria-sup
+
+
+[Dplus KIA]
+Leagues: ['LCK' 'WLDs']
+Splits: ['Spring', 'Summer', 'LCK_WLDs']
+
+Kingen-top
+Lucid-jng
+ShowMaker-mid
+Aiming-bot
+Moham-sup
+
+
+[Gen.G]
+Leagues: ['LCK' 'MSI' 'EWC']
+Splits: ['Spring', 'Summer', 'MSI', 'EWC']
+
+Kiin-top
+Canyon-jng
+Chovy-mid
+Peyz-bot
+Lehends-sup
+
+
+[Hanwha Life Esports]
+Leagues: ['LCK']
+Splits: ['Spring', 'Summer']
+
+Doran-top
+Peanut-jng
+Zeka-mid
+Viper-bot
+Delight-sup
+
+
+[FlyQuest]
+Leagues: ['LCS' 'MSI' 'EWC']
+Splits: ['Spring', 'Summer', 'MSI', 'EWC']
+
+Bwipo-top
+Inspired-jng
+Quad-mid
+Massu-bot
+Busio-sup
+
+
+[Fnatic]
+Leagues: ['LEC' 'MSI' 'EWC']
+Splits: ['Winter', 'Spring', 'Summer', 'Finals', 'MSI', 'EWC']
+
+Oscarinin-top
+Razork-jng
+Humanoid-mid
+Noah-bot
+Jun-sup
+
+
+[Team Liquid]
+Leagues: ['LCS' 'MSI' 'EWC']
+Splits: ['Spring', 'Summer', 'MSI', 'EWC']
+
+Impact-top
+UmTi-jng
+APA-mid
+Yeon-bot
+CoreJJ-sup
+
+
+[G2 Esports]
+Leagues: ['LEC' 'MSI' 'EWC']
+Splits: ['Winter', 'Spring', 'Summer', 'Finals', 'MSI', 'EWC']
+
+BrokenBlade-top
+Yike-jng
+Caps-mid
+Hans Sama-bot
+Mikyx-sup
+
+
+[MAD Lions KOI]
+Leagues: ['LEC' 'WLDs']
+Splits: ['Winter', 'Spring', 'Summer', 'Finals', 'Playins']
+
+Myrwn-top
+Elyoya-jng
+Fresskowy-mid
+Supa-bot
+Alvaro-sup
+
+
+[paiN Gaming]
+Leagues: ['CBLOL' 'WLDs']
+Splits: ['Split 1', 'Split 2', 'Playins']
+
+Wizer-top
+CarioK-jng
+dyNquedo-mid
+TitaN-bot
+Kuri-sup
+
+
+[PSG Talon]
+Leagues: ['PCS' 'MSI' 'WLDs']
+Splits: ['Spring', 'Summer', 'MSI', 'Playins']
+
+Azhi-top
+JunJia-jng
+Maple-mid
+Betty-bot
+Woody-sup
+
+
+[GAM Esports]
+Leagues: ['VCS' 'MSI' 'WLDs']
+Splits: ['Spring', 'Summer', 'MSI', 'Playins']
+
+Kiaya-top
+Levi-jng
+Emo-mid
+EasyLove-bot
+Elio-sup
+
+

@@ -60,9 +60,10 @@ def create_single_split_team_df(multi_league_df, team_name, split_name, league_n
     """
     Create a dataframe for a single team per split per playoffs from the multi-league dataframe
     """
+
     # find all unique gameid values for a team in a split and add to a list
     df = multi_league_df[(multi_league_df['teamname'] == team_name) & (multi_league_df['split'] == split_name) & (multi_league_df['league'] == league_name)]
-    
+
     # find all unique gameid values in df
     gameids = df['gameid'].unique()
 
