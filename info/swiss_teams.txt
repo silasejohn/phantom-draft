@@ -1,6 +1,6 @@
 [Weibo Gaming]
-Leagues: ['LPL' 'WLDs']
-Splits: ['Spring', 'Summer Placements', 'Summer', 'LPL_WLDs']
+Leagues: ['LPL']
+Splits: ['Spring', 'Summer Placements', 'Summer', 'WLDs']
 
 Breathe-top
 Tarzan-jng
@@ -10,8 +10,8 @@ Crisp-sup
 
 
 [LNG Esports]
-Leagues: ['LPL' 'WLDs']
-Splits: ['Spring', 'Summer Placements', 'Summer', 'LPL_WLDs']
+Leagues: ['LPL']
+Splits: ['Spring', 'Summer Placements', 'Summer', 'WLDs']
 
 Zika-top
 Weiwei-jng
@@ -21,8 +21,8 @@ Hang-sup
 
 
 [Top Esports]
-Leagues: ['LPL' 'MSI' 'EWC']
-Splits: ['Spring', 'Summer Placements', 'Summer', 'MSI', 'EWC']
+Leagues: ['LPL']
+Splits: ['Spring', 'MSI', 'Summer Placements', 'EWC', 'Summer']
 
 369-top
 Tian-jng
@@ -32,8 +32,8 @@ Meiko-sup
 
 
 [Bilibili Gaming]
-Leagues: ['LPL' 'MSI' 'EWC']
-Splits: ['Spring', 'Summer Placements', 'Summer', 'MSI', 'EWC']
+Leagues: ['LPL']
+Splits: ['Spring', 'MSI', 'Summer Placements', 'EWC', 'Summer']
 
 Bin-top
 Wei-jng
@@ -43,8 +43,8 @@ ON-sup
 
 
 [T1]
-Leagues: ['LCK' 'MSI' 'EWC' 'WLDs']
-Splits: ['Spring', 'Summer', 'MSI', 'EWC', 'LCK_WLDs']
+Leagues: ['LCK']
+Splits: ['Spring', 'MSI', 'Summer', 'EWC', 'WLDs']
 
 Zeus-top
 Oner-jng
@@ -54,8 +54,8 @@ Keria-sup
 
 
 [Dplus KIA]
-Leagues: ['LCK' 'WLDs']
-Splits: ['Spring', 'Summer', 'LCK_WLDs']
+Leagues: ['LCK']
+Splits: ['Spring', 'Summer', 'WLDs']
 
 Kingen-top
 Lucid-jng
@@ -65,8 +65,8 @@ Moham-sup
 
 
 [Gen.G]
-Leagues: ['LCK' 'MSI' 'EWC']
-Splits: ['Spring', 'Summer', 'MSI', 'EWC']
+Leagues: ['LCK']
+Splits: ['Spring', 'MSI', 'Summer', 'EWC']
 
 Kiin-top
 Canyon-jng
@@ -87,8 +87,8 @@ Delight-sup
 
 
 [FlyQuest]
-Leagues: ['LCS' 'MSI' 'EWC']
-Splits: ['Spring', 'Summer', 'MSI', 'EWC']
+Leagues: ['LCS']
+Splits: ['Spring', 'MSI', 'Summer', 'EWC']
 
 Bwipo-top
 Inspired-jng
@@ -98,8 +98,8 @@ Busio-sup
 
 
 [Fnatic]
-Leagues: ['LEC' 'MSI' 'EWC']
-Splits: ['Winter', 'Spring', 'Summer', 'Finals', 'MSI', 'EWC']
+Leagues: ['LEC']
+Splits: ['Winter', 'Spring', 'MSI', 'Summer', 'EWC', 'Finals']
 
 Oscarinin-top
 Razork-jng
@@ -109,8 +109,8 @@ Jun-sup
 
 
 [Team Liquid]
-Leagues: ['LCS' 'MSI' 'EWC']
-Splits: ['Spring', 'Summer', 'MSI', 'EWC']
+Leagues: ['LCS']
+Splits: ['Spring', 'MSI', 'Summer', 'EWC']
 
 Impact-top
 UmTi-jng
@@ -120,8 +120,8 @@ CoreJJ-sup
 
 
 [G2 Esports]
-Leagues: ['LEC' 'MSI' 'EWC']
-Splits: ['Winter', 'Spring', 'Summer', 'Finals', 'MSI', 'EWC']
+Leagues: ['LEC']
+Splits: ['Winter', 'Spring', 'MSI', 'Summer', 'EWC', 'Finals']
 
 BrokenBlade-top
 Yike-jng
@@ -131,7 +131,7 @@ Mikyx-sup
 
 
 [MAD Lions KOI]
-Leagues: ['LEC' 'WLDs']
+Leagues: ['LEC']
 Splits: ['Winter', 'Spring', 'Summer', 'Finals', 'Playins']
 
 Myrwn-top
@@ -142,7 +142,7 @@ Alvaro-sup
 
 
 [paiN Gaming]
-Leagues: ['CBLOL' 'WLDs']
+Leagues: ['CBLOL']
 Splits: ['Split 1', 'Split 2', 'Playins']
 
 Wizer-top
@@ -153,8 +153,8 @@ Kuri-sup
 
 
 [PSG Talon]
-Leagues: ['PCS' 'MSI' 'WLDs']
-Splits: ['Spring', 'Summer', 'MSI', 'Playins']
+Leagues: ['PCS']
+Splits: ['Spring', 'MSI', 'Summer', 'Playins']
 
 Azhi-top
 JunJia-jng
@@ -164,8 +164,8 @@ Woody-sup
 
 
 [GAM Esports]
-Leagues: ['VCS' 'MSI' 'WLDs']
-Splits: ['Spring', 'Summer', 'MSI', 'Playins']
+Leagues: ['VCS']
+Splits: ['Spring', 'MSI', 'Summer', 'Playins']
 
 Kiaya-top
 Levi-jng
